@@ -1,1 +1,1 @@
-# apz-pzpi-21-6-vladyslav-tsvyk
+ПЗПІ-21-6 Цвик Владислав
