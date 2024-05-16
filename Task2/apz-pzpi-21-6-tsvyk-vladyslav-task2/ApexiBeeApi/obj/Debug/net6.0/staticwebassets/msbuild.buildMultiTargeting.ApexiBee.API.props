@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\ApexiBee.API.props" />
+</Project>

@@ -1,1 +1,743 @@
-empty
+1 ОПИС ЗАГАЛЬНОЇ АРХІТЕКТУРИ СИСТЕМИ ТА СЕРВЕРНОЇ ЧАСТИНИ
+
+Серверна частина системи представлена ASP.NET Core Web API-застосунком та написана з використанням мови програмування С# та платформи .NET 6.
+Архітектура серверної частини побудована за принципами чистої Onion-архітектури, яка складається з декількох шарів: Core (Domain та Application), Infrastructure, Persistance, API.
+Особливістю побудови такої архітектури є те, що залежності можуть бути присутніми тільки до внутрнішніх шарів. Таким чином Core не має залежностей від інших шарів і може існувати незалежно від фреймворків, баз даних та шару представлення у вигляді API.
+Детальний присутніх шарів:
+- ApexiBee.API: Цей шар представляє собою точку входу для HTTP-запитів та відповідає за маршрутизацію, автентифікацію, авторизацію та обробку запитів за допомогою контролерів. Всі HTTP-запити від клієнтів обробляються на цьому рівні, де здійснюється початкова обробка та передача запитів до рівнів бізнес-логіки.
+- ApexiBee.Application: Цей шар містить бізнес-логіку системи та оркеструє виконання запитів, обробляючи їх через відповідні сервіси. Використання цього шару дозволяє ізолювати бізнес-логіку від деталей реалізації інфраструктури, що спрощує тестування та модифікацію коду.
+- ApexiBee.Domain: У цьому шарі визначаються основні об'єкти доменної моделі та логіка, пов'язана безпосередньо з ними. Сюди відносяться класи сутностей, їх властивості та методи, які відповідають за поведінку об'єктів у системі. Даний шар не залежить від інших рівнів і може використовуватись в інших застосунках.
+- ApexiBee.Infrastructure.Interfaces: Цей шар містить інтерфейси для взаємодії з інфраструктурними компонентами, такими як бази даних, файлові системи, зовнішні сервіси та інші. Інтерфейси визначають контракти для реалізацій, які містяться у шарі ApexiBee.Infrastructure.Implementations.
+- ApexiBee.Infrastructure.Implementations: Цей шар містить реалізації інтерфейсів, визначених у шарі ApexiBee.Infrastructure.Interfaces. Тут здійснюється конкретна реалізація взаємодії з зовнішніми сервісами та іншими інфраструктурними компонентами. Це забезпечує гнучкість та можливість легко замінювати конкретні реалізації без зміни коду інших рівнів.
+- ApexiBee.Persistance: Цей шар відповідає за роботу з базою даних за допомогою ORM Entity Framework Core. Він містить реалізації репозиторіїв, налаштування контексту бази даних та методи для виконання транзакцій. Використання цього шару дозволяє централізувати роботу з даними та спрощує підтримку і тестування.
+У цій архітектурі забезпечується чітке розділення відповідальності між різними частинами системи, що дозволяє легко підтримувати, тестувати та розширювати систему. Кожен шар взаємодіє з іншими через чітко визначені інтерфейси, що забезпечує слабку зв'язність і високу модульність системи.
+У серверному застосунку використано такі патерни та принципи, як Dependency Injection, Unit of work, Bridge.
+Відкритий API для взаємодії створено за усіма принципами побудови RESTful взаємодії.
+
+2 ПОБУДОВА ДІАГРАМИ РОЗГОРТАННЯ
+
+Система складається з декількох компонентів. Візуалізація розгортання системи представлена на діаграма розгортання (рисунок 1).
+Серверна частина взаємодіє з базою даних, отримує з неї данні. 
+Клієнтська частина надсилає запити до серверної частини для отримання відповіді та відображає їх користувачу.
+Smart Device Hive надсилає дані, отримані з датчиків до пристрою Hub по протоколу LORA, який у свою чергу збирає усі дані до купи та надсилає їх на сервер за протоколом HTTPs.
+Мобільний застосунок звертається до Web API для отримання даних.
+Користувач взаємодіє з сервером шляхом звертання до певних методів контролерів. Контролер групує логічно зв’язані методи для клієнт-серверної взаємодії.
+
+3 АРХІТЕКТУРНІ РІШЕННЯ СЕРВЕРНОЇ ЧАСТИНИ ТА ВИКОРИСТАНІ ТЕХНОЛОГІЇ
+
+Для розробки серверну частину програмної системи використано платформу .NET 6.0 та мову програмування C#, а також технологію ASP.NET Core для розробки Web API.
+Для зберігання даних використовується база даних SQL Server. Доступ до даних з серверної частини застосунку відбувається за допомогою технології Entity Framework Core. 
+Безпека даних підтримується завдяки хешуванню паролів за допомогою бібліотеки BCrypt.Net. Авторизація користувачів відбувається за допомогою JWT, який генерується застосунком.
+Інтернаціоналізація забезпечується шляхом підтримки різних часових поясів (усі дати на сервері зберігаються за часом UTC), можливості вибору різних одиниць вимірювання.
+Забезпечено підтримку UTF-8 та ASCII і можливості передачі за зберігання інформації у базі даних різними мовами.
+Адміністрування базою даних додатково можна здійснювати програмним шляхом за допомогою звертання до певних кінцевих точок серверної частини.
+Під час розробки було використано деякі допоміжні пакети та фреймоворки, такі як Entity Framework Core, ASP.NET Core, ASP.NET Core Identity, Automapper, BCrypt.net, AspNetCore JwtBearer.
+
+4 ПОБУДОВА ДІАГРАМИ ПРЕЦЕДЕНТІВ
+
+Програмна система, що розробляється, передбачає 3 категорії користувачів: адміністратор системи, менеджер та бджоляр. 
+Відповідно до потреб користувачів була розроблена діаграма прецедентів (Додаток А).
+Можливі дії користувачів відповідно до ролей.
+1. Адміністратор системи:
+- Аутентифікація та авторизація.
+- Робота з базою даних: Адміністратор системи має можливість керувати базою даних, включаючи виконання резервного копіювання (бекапу) та відновлення даних з бекапу.
+	- Перегляд дати останнього бекапу
+	- Бекап бази даних
+	- Відновлення даних з бекупу
+- Управління ролями доступу: Адміністратор може створювати нові ролі доступу, переглядати існуючі ролі, призначати ролі користувачам, а також видаляти ролі доступу.
+	- Створення нових ролей доступу
+	- Перегляд ролей доступу
+	- Призначення ролей користувачам
+	- Видалення ролей доступу
+2. Бджоляр:
+- Аутентифікація та авторизація: Бджоляр виконує вхід до системи та проходить перевірку прав доступу.
+- Створення аккаунту: Можливість створення нового аккаунту для доступу до системи.
+- Перегляд своїх пасік: Бджоляр може переглядати інформацію про свої пасіки.
+	- Додавання вуликів
+	- Перегляд вуликів пасіки
+	- Перегляд детальної інформації про вулик
+	- Отримання даних з датчиків за різні періоди
+	- Перегляд датчиків, під'єднаних до вуликів
+	- Отримання середнього значення датчика за день
+- Перегляд власних замовлень: Бджоляр може переглядати свої замовлення та скасовувати їх.
+	- Скасування замовлень
+3. Менеджер
+- Аутентифікація та авторизація: Менеджер виконує вхід до системи та проходить перевірку прав доступу.
+- Створення аккаунту: Можливість створення нового аккаунту для доступу до системи.
+- Перегляд замовлень на обладнання: Менеджер має доступ до всіх замовлень на обладнання.
+	- Фільтрація замовлень за датою та статусом
+	- Підтвердження замовлень
+	- Завершення замовлень
+- Створення нових замовлень: Менеджер може створювати нові замовлення на обладнання.
+- Управління обладнанням: Менеджер може переглядати, додавати, видаляти обладнання та створювати нові серійні номери.
+	- Перегляд усього обладнання
+	- Додавання обладнання
+	- Видалення обладнання
+	- Створення нових серійних номерів
+Цей перелік відображає усі можливі дії, які можуть виконувати користувачі системи. Відповідно до потреб користувачів, програма повинна бути поділена на модулі.
+
+5 ПОБУДОВА ER-ДІАГРАМИ
+
+Для створення бази даних було розроблено ER-модель даних. Вона складається з 13 таблиць.
+ER-модель, що побудована з використанням нотації Crow’s Foot, наведена у додатку Б.
+Усі наявні сутносту у системі:
+1.User:
+- PKId: Унікальний ідентифікатор користувача
+- Username: Ім'я користувача
+- Email: Адреса електронної пошти
+- Phone: Номер телефону
+- PasswordHash: Хеш пароля
+- EmailConfirmed: Підтвердження електронної пошти
+- UserAccountId: Ідентифікатор акаунту користувача
+2.UserRole:
+- PKId: Унікальний ідентифікатор
+- RoleId: Ідентифікатор ролі
+- UserId: Ідентифікатор користувача
+3. Role
+- PKId: Унікальний ідентифікатор ролі
+- Name: Назва ролі
+4. Order
+- PKId: Унікальний ідентифікатор замовлення
+- OrderDate: Дата замовлення
+- Description: Опис замовлення
+- OrderStatusId: Ідентифікатор статусу замовлення
+- ManagerId: Ідентифікатор менеджера
+- BeekeeperId: Ідентифікатор бджоляра
+5. OrderStatus
+- PKId: Унікальний ідентифікатор статусу замовлення
+- StatusName: Назва статусу
+6. Apiary
+- PKId: Унікальний ідентифікатор пасіки
+- Name: Назва пасіки
+- Description: Опис пасіки
+- CreationDate: Дата створення пасіки
+- BeekeeperId: Ідентифікатор бджоляра
+7. Hive
+- PKId: Унікальний ідентифікатор вулика
+- Name: Назва вулика
+- Description: Опис вулика
+- IsActive: Статус активності
+- InstallationDate: Дата установки
+- LastInspectionDate: Дата останньої інспекції
+- NumberOfFrames: Кількість рамок
+- Latitude: Широта
+- Longitude: Довгота
+- ApiaryId: Ідентифікатор пасіки
+- SerialDataId: Ідентифікатор серійних даних
+8. SensorType
+- PKId: Унікальний ідентифікатор типу сенсора
+- Name: Назва типу сенсора
+- Description: Опис типу сенсора
+- MeasureUnit: Одиниця виміру
+9. Sensor
+- Поля:
+- PKId: Унікальний ідентифікатор сенсора
+- SensorTypeId: Ідентифікатор типу сенсора
+- HiveId: Ідентифікатор вулика
+10. SensorReading
+- PKId: Унікальний ідентифікатор показання сенсора
+- ReadingDate: Дата показання
+- Value: Значення показання
+- SensorId: Ідентифікатор сенсора
+11. SerialData
+- PKId: Унікальний ідентифікатор серійних даних
+- SerialNumber: Серійний номер
+- EquipmentType: Тип обладнання
+12. HubStation
+- PKId: Унікальний ідентифікатор станції хабу
+- Latitude: Широта
+- Longitude: Довгота
+- EquipmentRegistrationDate: Дата реєстрації обладнання
+- ApiaryId: Ідентифікатор пасіки
+- SerialDataId: Ідентифікатор серійних даних
+13. UserAccount
+- PKId: Ідектифікатор користувача
+- RegistrationDate: Дата реєстрації
+Зв'язки між сутностями:
+- UserRole та User мають зв'язок багато-до-багатьох через таблицю зв'язку UserRole, яка зберігає інформацію про ролі, призначені користувачам.
+- Order пов'язаний з User через поля ManagerId та BeekeeperId, що дозволяє зберігати інформацію про менеджера та бджоляра, пов'язаних з конкретним замовленням.
+- Order пов'язаний з OrderStatus, що дозволяє відстежувати поточний статус замовлення.
+- Apiary пов'язаний з User через поле BeekeeperId, що дозволяє визначити бджоляра, який керує пасікою.
+- Hive пов'язаний з Apiary, що дозволяє зберігати інформацію про пасіку, до якої належить вулик.
+- Hive також пов'язаний з SerialData, що дозволяє зберігати серійні дані вулика.
+- Sensor пов'язаний з SensorType та Hive, що дозволяє зберігати інформацію про тип сенсора та вулик, до якого він належить.
+- SensorReading пов'язаний з Sensor, що дозволяє зберігати показання сенсора.
+- HubStation пов'язаний з Apiary та SerialData, що дозволяє зберігати інформацію про пасіку, до якої належить хаб, та серійні дані хабу.
+
+6 СПЕЦИФІКАЦІЯ REST
+
+Взаємодія з серверна частина розроблена за архітектурним стилем REST. Специфікація усіх кінцевих точок REST API наведена у таблиці 1.
+
+Метод	Кінцева точка	Опис
+POST	/api/Admin/db/backup	Створення резервної копії бази даних
+POST	/api/Admin/db/restore	Відновлення бази даних з резервної копії
+GET	/api/Admin/db/lastbackup	Отримання дати останнього резервного копіювання
+POST	/api/Apiary	Створення нової пасіки
+DELETE	/api/Apiary/{apiaryId}	Видалення пасіки за її ідентифікатором
+POST	/api/Apiary/hive	Створення нового вулика
+PATCH	/api/Apiary/hive/{hiveId}	Оновлення інформації про вулик за його ідентифікатором
+GET	/api/Apiary/user/{userId}	Отримання інформації про пасіки користувача за його ідентифікатором
+GET	/api/Apiary/hives	Отримання списку всіх вуликів
+GET	/api/Apiary/all	Отримання інформації про всі пасіки
+POST	/api/Auth/register	Реєстрація нового користувача
+POST	/api/Auth/login	Авторизація користувача
+POST	/api/Auth/role	Додавання нової ролі
+DELETE	/api/Auth/role	Видалення існуючої ролі
+POST	/api/Auth/user/role	Призначення ролі користувачу
+GET	/api/Equipment/serial/all	Отримання всіх серійних даних
+POST	/api/Equipment/serial/{equipmentType}	Додавання нових серійних даних для вказаного типу обладнання
+DELETE	/api/Equipment/serial/number/{serialNumber}	Видалення серійних даних за серійним номером
+DELETE	/api/Equipment/serial/id/{serialDataId}	Видалення серійних даних за ідентифікатором
+POST	/api/Order/status	Додавання нового статусу замовлення
+GET	/api/Order/status/all	Отримання всіх статусів замовлень
+DELETE	/api/Order/status/{orderStatus}	Видалення статусу замовлення за його ідентифікатором
+POST	/api/Order	Створення нового замовлення
+PATCH	/api/Order/approve/{orderId}	Підтвердження замовлення за його ідентифікатором
+PATCH	/api/Order/complete/{orderId}	Завершення замовлення за його ідентифікатором
+PATCH	/api/Order/cancel/{orderId}	Скасування замовлення за його ідентифікатором
+GET	/api/Order/user/all/{userId}	Отримання всіх замовлень користувача за його ідентифікатором
+GET	/api/Order/all	Отримання всіх замовлень
+POST	/api/Order/filter	Фільтрація замовлень за вказаними критеріями
+POST	/api/Sensor	Додавання нового датчика
+POST	/api/Sensor/type	Додавання нового типу датчика
+POST	/api/Sensor/readings/hub/{hubId}	Додавання показань датчика для вказаного хабу
+DELETE	/api/Sensor/{sensorId}	Видалення датчика за його ідентифікатором
+GET	/api/Sensor/daily-average	Отримання середнього значення датчика за день
+GET	/api/Sensor/hive/{hiveId}/last	Отримання останніх даних датчика для вулика за його ідентифікатором
+GET	/api/Sensor/period	Отримання показань датчика за період
+GET	/api/Sensor/type/all	Отримання всіх типів датчиків
+
+7 ПОБУДОВА ДІАГРАМИ ПАКЕТІВ
+
+Програмний код поділений на різні пакети та компоненти за допомогою просторів імен. Додатково використовується декілька зовнішніх бібліотек. Пакетну структуру програмної системи наведено на діаграмі пакетів (див. рис. 2).
+Основний пакет ApexiBee.WebApi є точкою входу в систему і відповідає за обробку HTTP-запитів. Цей пакет включає контролери (Controllers) та проміжне програмне забезпечення (middleware, розташоване у пакеті Middlewares), які забезпечують маршрутизацію запитів та їх попередню обробку. ApexiBee.WebApi має залежності від ApexiBee.Application, ApexiBee.Domain, ApexiBee.Infrastructure.Implementation, ApexiBee.Infrastructure.Interfaces, ApexiBee.Persistance, а також використовує бібліотеки Microsoft.AspNetCore, Microsoft.AspNetCore.Identity, AutoMapper та BCrypt.Net.
+Пакет ApexiBee.Application містить бізнес-логіку системи і сервіси, які оркеструють виконання запитів. Цей пакет інтегрує функціонал з DomainServices, Exceptions, Interfaces, Helpers та має залежності від ApexiBee.Domain. Таким чином, він забезпечує бізнес-логіку, використовуючи моделі домену і сервіси.
+ApexiBee.Domain включає доменні моделі та логіку, що безпосередньо пов'язана з цими моделями. До цього пакету також належать перелічувані типи (enums) та моделі, які визначають структуру даних у системі. Відповідно, ApexiBee.Domain є незалежним шаром, що містить основні бізнес-об'єкти системи.
+ApexiBee.Infrastructure.Interfaces забезпечує абстракцію для інфраструктурних компонентів, таких як репозиторії, сервіси та інші зовнішні залежності. Цей пакет містить інтерфейси (RepositoryInterfaces), які реалізуються у пакеті ApexiBee.Infrastructure.Implementation.
+ApexiBee.Infrastructure.Implementation містить реалізації інтерфейсів з пакету ApexiBee.Infrastructure.Interfaces. Тут розташовані конкретні реалізації репозиторіїв (Repositories) та сервісів (Services), які забезпечують взаємодію з базою даних та іншими інфраструктурними компонентами. Цей пакет також має залежність від ApexiBee.Persistance.
+ApexiBee.Persistance відповідає за збереження даних та взаємодію з базою даних. Цей пакет використовує ORM Entity Framework Core (Microsoft.EntityFrameworkCore) для роботи з базою даних, а також містить конфігурації бази даних (DataBaseConfiguration). ApexiBee.Persistance є основним компонентом для роботи з персистентним зберіганням даних у системі.
+Додаткові бібліотеки, такі як Microsoft.AspNetCore та Microsoft.AspNetCore.Identity, забезпечують базову функціональність для створення веб-додатків та управління автентифікацією і авторизацією користувачів. AutoMapper використовується для автоматичного маппінгу об'єктів між різними рівнями системи, а BCrypt.Net для хешування паролів.
+
+ВИСНОВКИ
+
+В ході виконання лабораторної роботи було спроектовано та розроблено серверну частину програмної системи та наведено опис прийнятих в процесі розробки інженерних рішень. При розробці та проектуванні програмного продукту були дотримані основні вимоги для підтримки чистоти коду.
+Посилання на відеоролик з тестуванням серверної частини: https://www.youtube.com/watch?v=haYqWFsae_g
+Посилання на архів з кодом серверної частини:
+
+ДОДАТОК А
+Діаграма прецедентів
+
+ДОДАТОК Б
+ER-модель даних
+
+ДОДАТОК В
+Програмний код запуску серверу
+
+1.	using ApexiBee.Persistance.Database;
+2.	using ApexiBee.Persistance.EntityConfiguration;
+3.	using ApexiBee.Domain.Models;
+4.	
+5.	using Microsoft.EntityFrameworkCore;
+6.	using Microsoft.AspNetCore.Identity;
+7.	using ApexiBee.Application.Interfaces;
+8.	using ApexiBee.Infrastructure.Implementation.Services;
+9.	using ApexiBee.Infrastructure.Implementation.Repositories;
+10.	using ApexiBee.Infrastructure.Interfaces;
+11.	using ApexiBee.Application.Helpers;
+12.	using ApexiBee.Application.DomainServices;
+13.	using ApexiBee.API.Middleware;
+14.	using Microsoft.SqlServer.Management.Smo.Wmi;
+15.	using AutoMapper;
+16.	using ApexiBee.Infrastructure.Implementation.AutoMapper;
+17.	using ApexiBee.Infrastructure.Implementation.Helpers;
+18.	
+19.	var builder = WebApplication.CreateBuilder(args);
+20.	
+21.	var Configuration = builder.Configuration;
+22.	
+23.	builder.Services.AddControllers();
+24.	// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+25.	builder.Services.AddEndpointsApiExplorer();
+26.	builder.Services.AddSwaggerGen();
+27.	
+28.	builder.Services.AddDbContext<BeeDbContext>(options =>
+29.	{
+30.	    options.UseSqlServer(Configuration.GetConnectionString("default"), b => b.MigrationsAssembly("ApexiBee.Persistance"));
+31.	});
+32.	
+33.	// Configuring identity using ASP.NET Core Identity
+34.	builder.Services
+35.	    .AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
+36.	    {
+37.	        options.Password.RequireDigit = true;
+38.	        options.Password.RequireNonAlphanumeric = false;
+39.	        options.Password.RequireUppercase = false;
+40.	        options.Password.RequiredLength = 6;
+41.	        options.Password.RequiredUniqueChars = 0;
+42.	    })
+43.	    .AddEntityFrameworkStores<BeeDbContext>()
+44.	    .AddDefaultTokenProviders();
+45.	
+46.	// Add services to the container (services dependency injection).
+47.	builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+48.	builder.Services.AddScoped<IDatabaseService, DatabaseService>();
+49.	builder.Services.AddScoped<IAuthService, AuthService>();
+50.	builder.Services.AddScoped<IRoleService, RoleService>();
+51.	builder.Services.AddScoped<IOrderService, OrderService>();
+52.	builder.Services.AddScoped<IApiaryService, ApiaryService>();
+53.	builder.Services.AddScoped<IEquipmentService, EquipmentService>();
+54.	builder.Services.AddScoped<ISensorService, SensorService>();
+55.	builder.Services.AddSingleton<ConfigurationHelper>();
+56.	
+57.	builder.Services.AddScoped<JwtHelper>();
+58.	
+59.	var mapperConfig = new MapperConfiguration(mc =>
+60.	{
+61.	    mc.AddProfile(new MapperProfile());
+62.	});
+63.	
+64.	IMapper mapper = mapperConfig.CreateMapper();
+65.	builder.Services.AddSingleton(mapper);
+66.	
+67.	
+68.	var app = builder.Build();
+69.	
+70.	// Configure the HTTP request pipeline.
+71.	if (app.Environment.IsDevelopment())
+72.	{
+73.	    app.UseSwagger();
+74.	    app.UseSwaggerUI();
+75.	}
+76.	
+77.	app.UseMiddleware<ErrorHandlingMiddleware>();
+78.	
+79.	app.UseHttpsRedirection();
+80.	
+81.	app.UseAuthorization();
+82.	
+83.	app.MapControllers();
+84.	
+85.	app.Run();
+
+ДОДАТОК Г
+Програмний код інтерфейсу сервісу для роботи з обладнанням
+1.	public interface IEquipmentService
+2.	{
+3.	    /// <summary>
+4.	    /// Retrieves all serial data.
+5.	    /// </summary>
+6.	    /// <returns>A task that represents the asynchronous operation. The task result contains an IEnumerable of SerialData.</returns>
+7.	    Task<IEnumerable<SerialData>> GetAllSerialData();
+8.	        
+9.	    /// <summary>
+10.	    /// Adds new serial data for the specified equipment type.
+11.	    /// </summary>
+12.	    /// <param name="equipmentType">The type of the equipment for which to add serial data.</param>
+13.	    /// <returns>A task that represents the asynchronous operation. The task result contains the added SerialData.</returns>
+14.	    Task<SerialData> AddNewSerialData(EquipmentType equipmentType);
+15.	
+16.	    /// <summary>
+17.	    /// Removes serial data by its serial number.
+18.	    /// </summary>
+19.	    /// <param name="serialNumber">The serial number of the serial data to remove.</param>
+20.	    /// <returns>A task that represents the asynchronous operation.</returns>
+21.	    Task RemoveSerialDataByName(string serialNumber);
+22.	
+23.	    /// <summary>
+24.	    /// Removes serial data by its ID.
+25.	    /// </summary>
+26.	    /// <param name="serialDataid">The ID of the serial data to remove.</param>
+27.	    /// <returns>A task that represents the asynchronous operation.</returns>
+28.	    Task RemoveSerialDataById(Guid serialDataid);
+29.	
+30.	    /// <summary>
+31.	    /// Generates a unique serial number.
+32.	    /// </summary>
+33.	    /// <returns>A unique serial number as a string.</returns>
+34.	    string GenerateUniqueSerialNumber();
+35.	
+36.	    /// <summary>
+37.	    /// Gets the string representation of the equipment name based on the equipment type.
+38.	    /// </summary>
+39.	    /// <param name="type">The equipment type.</param>
+40.	    /// <returns>The string representation of the equipment name.</returns>
+41.	    string GetStringEquipmentName(EquipmentType type);
+42.	} 
+
+ДОДАТОК Д
+Програмний код сервісу для роботи з датчиками
+1.	public class SensorService : ServiceBase, ISensorService
+2.	{
+3.	    public SensorService(IUnitOfWork unitOfWork) : base(unitOfWork)
+4.	    { }
+5.	
+6.	    public async Task<Sensor> AddNewSensor(NewSensorData newSensorData)
+7.	    {
+8.	        SensorType? foundSensorType = await unitOfWork.SensorTypeRepository.GetByIdAsync(newSensorData.SensorTypeId);
+9.	        if (foundSensorType == null)
+10.	        {
+11.	            throw new NotFoundException("sensor type");
+12.	        }
+13.	
+14.	        Sensor newSensor = new Sensor()
+15.	        {
+16.	            SensorTypeId = newSensorData.SensorTypeId,
+17.	            HiveId = newSensorData.HiveId
+18.	        };
+19.	
+20.	        await unitOfWork.SensorRepository.AddAsync(newSensor);
+21.	        await unitOfWork.SaveAsync();
+22.	
+23.	        return newSensor;
+24.	    }
+25.	
+26.	    public async Task<SensorType> AddNewSensorType(NewSensorTypeData newSensorTypeData)
+27.	    {
+28.	        SensorType sensorType = new SensorType()
+29.	        {
+30.	            Description = newSensorTypeData.Description,
+31.	            Name = newSensorTypeData.Name,
+32.	            MeasureUnit = newSensorTypeData.MeasureUnit
+33.	        };
+34.	
+35.	        await unitOfWork.SensorTypeRepository.AddAsync(sensorType);
+36.	        await unitOfWork.SaveAsync();
+37.	        return sensorType;
+38.	    }
+39.	
+40.	    public async Task<(int, int)> AddSensorReadings(IEnumerable<NewSensorReading> readings, Guid senderHubId)
+41.	    {
+42.	        int totalReadings = readings.Count();
+43.	        int addedReadings = 0;
+44.	        HubStation? foundHub = await unitOfWork.HubStationRepository.GetByIdAsync(senderHubId);
+45.	        if(foundHub == null)
+46.	        {
+47.	            throw new NotFoundException(senderHubId, "hub station");
+48.	        }
+49.	
+50.	        Guid[] sensorIds = unitOfWork.SensorRepository.GetAll().Select(e => e.Id).ToArray();
+51.	
+52.	        foreach(NewSensorReading reading in readings)
+53.	        {
+54.	            if (sensorIds.Contains(reading.SensorId))
+55.	            {
+56.	                SensorReading newReading = new SensorReading()
+57.	                {
+58.	                    SensorId = reading.SensorId,
+59.	                    Value = reading.Value,
+60.	                    ReadingDate = reading.ReadingDate
+61.	                };
+62.	                await unitOfWork.SensorReadingRepository.AddAsync(newReading);
+63.	                addedReadings += 1;
+64.	            }
+65.	        }
+66.	
+67.	        await unitOfWork.SaveAsync();
+68.	        return (addedReadings, totalReadings);
+69.	    }
+70.	
+71.	    public async Task DeleteSensor(Guid sensorId)
+72.	    {
+73.	        try
+74.	        {
+75.	            await unitOfWork.SensorRepository.DeleteByIdAsync(sensorId);
+76.	        }
+77.	        catch (InvalidOperationException) 
+78.	        {
+79.	            throw new NotFoundException(sensorId, "sensor");
+80.	        }
+81.	    }
+82.	
+83.	    public async Task<SensorCountedResult> GetAverageDailySensorValue(Guid sensorId, DateTime date)
+84.	    {
+85.	        Sensor? foundSensor = await unitOfWork.SensorRepository.GetByIdAsync(sensorId);
+86.	        if(foundSensor == null)
+87.	        {
+88.	            throw new NotFoundException(sensorId, "sensor");
+89.	        }
+90.	
+91.	        SensorType sensorType = (await unitOfWork.SensorTypeRepository.GetByIdAsync(foundSensor.SensorTypeId))!;
+92.	
+93.	        IEnumerable<SensorReading> sensorReadings = unitOfWork.SensorReadingRepository
+94.	            .GetAll().Where(e => e.ReadingDate.Date == date.Date && e.SensorId == sensorId).ToList();
+95.	
+96.	        if(!sensorReadings.Any())
+97.	        {
+98.	            SensorCountedResult incorrectResult = new SensorCountedResult()
+99.	            {
+100.	                SensorId = sensorId,
+101.	                SensorTypeId = foundSensor.SensorTypeId,
+102.	                Value = null,
+103.	                SensorType = sensorType.Name,
+104.	                MeasureUnit = sensorType.MeasureUnit
+105.	            };
+106.	            return incorrectResult;
+107.	        }
+108.	
+109.	        double calculatedValue = CalculateWeightedAverage(sensorReadings.ToArray());
+110.	
+111.	        SensorCountedResult result = new SensorCountedResult()
+112.	        {
+113.	            SensorId = sensorId,
+114.	            SensorTypeId = foundSensor.SensorTypeId,
+115.	            Value = calculatedValue,
+116.	            SensorType = sensorType.Name,
+117.	            MeasureUnit = sensorType.MeasureUnit
+118.	        };
+119.	        return result;
+120.	
+121.	    }
+122.	
+123.	    public async Task<IEnumerable<SensorReading>> GetLastHiveSensorData(Guid hiveId)
+124.	    {
+125.	        Hive? foundHive = await unitOfWork.HiveRepository.GetByIdWithAllDetailsAsync(hiveId);
+126.	        if(foundHive == null)
+127.	        {
+128.	            throw new NotFoundException(hiveId, "hive");
+129.	        }
+130.	
+131.	        Guid[] sensorIds = foundHive.Sensors.Select(e => e.Id).ToArray();
+132.	        IEnumerable<SensorReading> hiveSensorReadings = unitOfWork.SensorReadingRepository
+133.	            .GetAll().Where(e => sensorIds.Contains(e.SensorId)).ToList();
+134.	
+135.	        IEnumerable<SensorReading> lastSensorReadings = hiveSensorReadings
+136.	            .GroupBy(e => e.SensorId)
+137.	            .Select(g => g.OrderByDescending(e => e.ReadingDate).First())
+138.	            .ToList();
+139.	
+140.	        return lastSensorReadings;
+141.	    }
+142.	
+143.	    public async Task<IEnumerable<SensorReading>> GetSensorReadingsWithinPeriod(Guid sensorId, DateTime start, DateTime end)
+144.	    {
+145.	        Sensor? foundSensor = await unitOfWork.SensorRepository.GetByIdAsync(sensorId);
+146.	        if(foundSensor == null)
+147.	        {
+148.	            throw new NotFoundException(sensorId, "sensor");
+149.	        }
+150.	
+151.	        IEnumerable<SensorReading> sensorReadingsWithinPeriod = unitOfWork.SensorReadingRepository
+152.	            .GetAll().Where(e => e.SensorId == sensorId && e.ReadingDate >= start && e.ReadingDate <= end).ToList();
+153.	
+154.	        return sensorReadingsWithinPeriod;
+155.	    }
+156.	
+157.	    public async Task<IEnumerable<SensorType>> GetSensorTypes()
+158.	    {
+159.	        var sensorTypes = unitOfWork.SensorTypeRepository.GetAll().ToList();
+160.	        return sensorTypes;
+161.	    }
+162.	
+163.	    private double CalculateWeightedAverage(SensorReading[] readings)
+164.	    {
+165.	        if (readings == null || readings.Length == 0)
+166.	            throw new ArgumentException("The readings array is empty or null.");
+167.	
+168.	        var sortedReadings = readings.OrderBy(r => r.ReadingDate).ToArray();
+169.	
+170.	        double weightedSum = 0;
+171.	        double totalWeight = 0;
+172.	
+173.	        for (int i = 0; i < sortedReadings.Length - 1; i++)
+174.	        {
+175.	            var currentReading = sortedReadings[i];
+176.	            var nextReading = sortedReadings[i + 1];
+177.	
+178.	            double timeInterval = (nextReading.ReadingDate - currentReading.ReadingDate).TotalMinutes;
+179.	
+180.	            double weight = timeInterval;
+181.	
+182.	            weightedSum += currentReading.Value * weight;
+183.	            totalWeight += weight;
+184.	        }
+185.	
+186.	        // Calculating last reading
+187.	        if (sortedReadings.Length > 1)
+188.	        {
+189.	            var lastReading = sortedReadings.Last();
+190.	
+191.	            // We assume that the last reading is valid until the end of the day
+192.	            double lastWeight = (DateTime.Today.AddDays(1) - lastReading.ReadingDate).TotalMinutes;
+193.	
+194.	            weightedSum += lastReading.Value * lastWeight;
+195.	            totalWeight += lastWeight;
+196.	        }
+197.	
+198.	        return weightedSum / totalWeight;
+199.	    }
+200.	} 
+
+ДОДАТОК Е
+Програмний код класу для генерації JWT токенів
+1.	using Microsoft.EntityFrameworkCore;
+2.	public class JwtHelper
+3.	{
+4.	    public string GenerateJwtToken(Guid userAccountId, Guid credentialsId, string username, string role)
+5.	    {
+6.	        var tokenHandler = new JwtSecurityTokenHandler();
+7.	        var key = new byte[16];
+8.	        using (var randomGenerator = RandomNumberGenerator.Create())
+9.	        {
+10.	            randomGenerator.GetBytes(key);
+11.	        }
+12.	        var tokenDescriptor = new SecurityTokenDescriptor
+13.	        {
+14.	            Subject = new ClaimsIdentity(new[]
+15.	            {
+16.	                new Claim(ClaimTypes.Name, username),
+17.	                new Claim("credentialsId", $"{credentialsId}"),
+18.	                new Claim("accountId", $"{userAccountId}"),
+19.	                new Claim(ClaimTypes.Role, role)
+20.	            }),
+21.	            Expires = DateTime.UtcNow.AddDays(1),
+22.	            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+23.	        };
+24.	        var token = tokenHandler.CreateToken(tokenDescriptor);
+25.	        return tokenHandler.WriteToken(token);
+26.	    }
+27.	}
+
+
+
+ 
+ДОДАТОК Ж
+Програмний код контроллеру для роботи з замовленнями 
+1.	    [Route("api/[controller]")]
+2.	    [ApiController]
+3.	    public class OrderController : ControllerBase
+4.	    {
+5.	        private readonly IOrderService orderService;
+6.	
+7.	        public OrderController(IOrderService orderService)
+8.	        {
+9.	            this.orderService = orderService;
+10.	        }
+11.	
+12.	        [HttpPost("status")]
+13.	        public async Task<IActionResult> AddStatus([FromBody] string statusName)
+14.	        {
+15.	            await orderService.CreateNewStatus(statusName);
+16.	            return Ok();
+17.	        }
+18.	
+19.	        [HttpGet("status/all")]
+20.	        public async Task<IActionResult> GetAllStatuses()
+21.	        {
+22.	            var statuses = await orderService.GetOrderStatuses();
+23.	            return Ok(statuses);
+24.	        }
+25.	
+26.	        [HttpDelete("status/{orderStatus}")]
+27.	        public async Task<IActionResult> DeleteStatus([FromRoute] string orderStatus)
+28.	        {
+29.	            await orderService.DeleteStatus(orderStatus);
+30.	            return Ok();
+31.	        }
+32.	
+33.	        [HttpPost]
+34.	        public async Task<IActionResult> PlaceNewOrder([FromBody] NewOrderData orderData)
+35.	        {
+36.	            var order = await orderService.PlaceOrder(orderData);
+37.	            return Ok(order);
+38.	        }
+39.	
+40.	        [HttpPatch("approve/{orderId}")]
+41.	        public async Task<IActionResult> ApproveOrder([FromRoute] Guid orderId)
+42.	        {
+43.	            var order = await orderService.ApproveOrder(orderId);
+44.	            return Ok(order);
+45.	        }
+46.	
+47.	        [HttpPatch("complete/{orderId}")]
+48.	        public async Task<IActionResult> CompleteOrder([FromRoute] Guid orderId)
+49.	        {
+50.	            var order = await orderService.CompleteOrder(orderId);
+51.	            return Ok(order);
+52.	        }
+53.	
+54.	        [HttpPatch("cancel/{orderId}")]
+55.	        public async Task<IActionResult> CancelOrder([FromRoute] Guid orderId)
+56.	        {
+57.	            var order = await orderService.CancelOrder(orderId);
+58.	            return Ok(order);
+59.	        }
+60.	
+61.	        [HttpGet("user/all/{userId}")]
+62.	        public async Task<IActionResult> GetAllUserOrders([FromRoute] Guid userId)
+63.	        {
+64.	            var userOrders = await orderService.GetUserOrders(userId);
+65.	            return Ok(userOrders);
+66.	        }
+67.	
+68.	        [HttpGet("all")]
+69.	        public async Task<IActionResult> GetAllOrders()
+70.	        {
+71.	            var orders = await orderService.GetAllOrders();
+72.	            return Ok(orders);
+73.	        }
+74.	
+75.	        [HttpPost("filter")]
+76.	        public async Task<IActionResult> GetAllOrdersWithFilters([FromBody] OrderFilter filters)
+77.	        {
+78.	            var orders = await orderService.GetOrdersWithFilters(filters);
+79.	            return Ok(orders);
+80.	        }
+81.	
+82.	    }
+ 
+ДОДАТОК Ж
+Програмний код middleware для обробки помилок 
+1.	public class ErrorHandlingMiddleware
+2.	{
+3.	    private readonly RequestDelegate _next;
+4.	    private readonly ILogger<ErrorHandlingMiddleware> _logger;
+5.	
+6.	    public ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandlingMiddleware> logger)
+7.	    {
+8.	        _next = next;
+9.	        _logger = logger;
+10.	    }
+11.	
+12.	    public async Task InvokeAsync(HttpContext context)
+13.	    {
+14.	        try
+15.	        {
+16.	            await _next(context);
+17.	        }
+18.	        catch (NotFoundException ex)
+19.	        {
+20.	            await WriteErrorResponse(context, StatusCodes.Status404NotFound, ex.Message);
+21.	        }
+22.	        catch (AlreadyExistsException ex)
+23.	        {
+24.	            await WriteErrorResponse(context, StatusCodes.Status400BadRequest, ex.Message);
+25.	        }
+26.	        catch (ArgumentException ex)
+27.	        {
+28.	            await WriteErrorResponse(context, StatusCodes.Status400BadRequest, ex.Message);
+29.	        }
+30.	        catch (Exception ex)
+31.	        {
+32.	            _logger.LogError(ex, "Unhandled exception occurred.");
+33.	            await HandleExceptionAsync(context, ex);
+34.	        }
+35.	    }
+36.	
+37.	    private static Task WriteErrorResponse(HttpContext context, int statusCode, string message)
+38.	    {
+39.	        context.Response.ContentType = "application/json";
+40.	        context.Response.StatusCode = statusCode;
+41.	        var result = JsonConvert.SerializeObject(new { error = message });
+42.	        return context.Response.WriteAsync(result);
+43.	    }
+44.	
+45.	    private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+46.	    {
+47.	        context.Response.ContentType = "application/json";
+48.	        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+49.	
+50.	        var result = JsonConvert.SerializeObject(new { error = exception.Message });
+51.	        return context.Response.WriteAsync(result);
+52.	    }
+53.	}
+
