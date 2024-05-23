@@ -1,0 +1,474 @@
+1 АРХІТЕКТУРА СИСТЕМИ ТА ПРОГРАМНІ ЗАСОБИ
+
+Для повноцінного функціонування програмної системи для моніторингу та керування пасікою "ApexiBee" необхідна інтеграція розумних пристроїв.
+У системі представлені два пристрої: центральний вузол пасіки (hub) та вулик (hive). Вони взаємопов'язані один з одним та сервером та дотримуються концепції Internet of Things.
+Для реалізації функціоналу розумних пристроїв використовується мікроконтролер ESP32, датчик DHT22 для вимірювання температури та вологості повітря, датчик навантаження HX711 для вимірювання ваги, модуль micro SD карти та деякі інші елементи. Для програмної реалізації була використана мова програмування C++, а також середовище Wokwi для імітації роботи та взаємодії розумних пристроїв. Додатково використовувалися бібліотеки для роботи з апаратною частиною та веб-взаємодією, такі як SD.h, HX711.h, WiFi.h, DHTesp.h, ArduinoJson.h, HTTPClient.h. 
+Основний функціонал містить в собі розумний пристрій Hive. Мікроконтролер ESP32 містить вбудовані модулі WiFi та Bluetooth, що спрощує його взаємодією з іншими елементами системи. До мікроконтролера вулика під'єднано два датчики (DHT22 та HX711) для вимірювання вологості, температури та ваги вулика. За потреби можна під'єднати інші датчики до інших пінів та розширити функціонал. Також до нього під'єднано інтерфейс для підключення micro SD карти, де зберігається конфігурація, а також, за потреби, дані з датчиків за певний проміжок часу. Додатково для взаємодії з пристроєм до нього підключено дві кнопки (для калібровки ваг та конфігурації), а також LED індикатор.
+Цей пристрій підтримує конфігурування. Мікроконтролер вулика може отримувати частину конфігурації з файлу (адреса серверу, ідентифікатор пристрою), а інші частину - з серверу (інші налаштування, такі як критичні значення датчиків, детальна інформація про підключені датчики тощо). Початкова конфігурація виконується при запуску мікроконтролера. При невдалому конфігуруванні робота пристрою припиняється, а користувач отримує відповідне сповіщення. Також можлива конфігурація шляхом натискання на кнопку, для того, щоб оновити дані з серверу та micro SD карти.
+Для коректного функціонування пристрій повинен мати стабільний зв'язок з мереженою Інтернет, через яку відбувається уся взаємодія. Додатково через цю мережу відбувається синхронізація часу для коректного відображення дати зчитування з датчиків.
+Отримання інформації з підключених датчиків відбувається періодично (раз на декілька секунд), які групуються та відправляються на центральний вузол пасіки. Додаткового для конфігурування пристрій підтримує калібровку ваг таким чином, що вага самого вулика не враховувалася, а зважувався тільки мед. Для цього потрібно натиснути на відповідну кнопку.
+Система використовує математичні методи для ефективної роботи. Для коретного збору даних з датчиків розраховується середнє значення вимірів за певний проміжок часу для того, щоб запобігти невірним зчитуванням. На сервер відправляється саме середнє значення. Це також сприяє зменшенню кількість даних у базі даних, а також непотрібної постійної взаємодії та зв'язку між елементами системи. Додатково пристрій отримує з серверу інформацію про критичні значення з певних датчиків та порівнює поточні значення з критичними. При виявленні значення, що менше або більше за критичне, пристній інформує про це користувача, а також може вплинути на мікроклімат всередині вулику для корегування значення температури чи вологості повітря.
+Для забезпечення інтернаціоналізації час у системі синхронізується через Інтернет та зберігається у форматі UTC. Це значення і передається далі на сервер.
+Ще один пристрій у системі - це hub. Він отримує дані з вуликів, групує їх та з певною періодичністю (раз на пів години) відправляє усі дані, отримані з усіх вуликів пасіки, на сервер.
+Частину конфігурації системи встановлює системний адміністратор чи менеджер, які встановлюють адресу серверу, ідентифікатор мікроконтролера вулика та стандартні критичні значення датчиків. Решту конфігураційної інформації може вносити бджоляр, шляхом отримання конфігурації з серверу.
+
+2 ПОБУДОВА ДІАГРАМИ ПРЕЦЕДЕНТІВ
+
+На діаграмі прецедентів відображаються дії усіх акторів для взаємодії з частиною системи, пов'язаною з розумними пристроями. Можна виділити декілька категорій користувачів, що напряму взаємодіють з цією підсистемою: адміністратор та бджоляр. Додатково на діаграмі вулик так центральний вузол пасіки відображені як окремі актори, так як можуть самостійно виконувати певні дії. Діаграма прецедентів відображена на рисунку 1.
+Бджоляр має можливість встановлювати зв'язок між пристроями та налаштовувати пристрої (з карти пам'яті чи серверу). Він також може отримувати інформацію з датчиків, таку як вологість повітря у вулику, активність бджіл, температуру та вагу меду у вуликах. Крім того, бджоляр отримує сповіщення про критичні показники вологості та температури у вуликах.
+Адміністратор системи може змінювати налаштування датчиків чи вуликів на сервері, налаштовувати загальну конфігурацію системи.
+Вулик збирає дані з датчиків, таких як температура, вологість у вулику, активність бджіл та вага меду у вуликах. Він групує та розраховує середнє значення з датчиків за короткий проміжок часу та надсилає ці дані до хабу. Також вулик отримує конфігурацію з сервера чи карти пам'яті, підключає датчики та змінює мікроклімат у вулику при критичних значеннях датчиків.
+Центральний вузол пасіки групує дані з усіх підключених вуликів та надсилає дані з вуликів на сервер.
+
+3 ПОБУДОВА ДІАГРАМИ ВЗАЄМОДІЇ
+
+Діаграма взаємодії відображає обмін повідомленнями між бджоляром та елементами системи. У нашому випадку це вулик, центральний вузол пасіки та сервер. Діаграма взаємодії у системі моніторингу та керування пасікою наведена на рисунку 2.
+Для налаштування датчиків бджоляр ініціює цю дію. Повідомлення про налаштування передається до вулика. Вулик, у свою чергу, отримує конфігураційні дані з сервера.
+Підключення вулика до центрального вузлу пасіки відбувається шляхом передачі повідомлення від вулика до хаба. Після успішного з'єднання вулик отримує про це інформацію.
+Вулик збирає інформацію з датчиків, розраховує середнє значення за певний проміжок часу. Отримані дані він надсилає на центральний вузол пасіки. Згруповані дані з усіх вуликів, які під'єднані до пасіки, хаб надсилає у певний проміжок часу на сервер.
+Якщо одне зі зчитаних даних з датчиків менше або більше критичного значення, то користувач отримує про це повідомлення від вулика. Вулик також може вплинути на значення цього показника, включивши підігрів, охолодження чи зволоження повітря.
+Користувач також може отримувати інформацію про підключені до пасіки вулики, хаби та датчики з серверу.
+
+4 ПОБУДОВА ДІАГРАМИ ДІЯЛЬНОСТІ
+
+Діаграма діяльності демонструє процес взаємодії та роботи розумного вулика, включаючи увімкнення та вимкнення пристрою, підключення до Wi-Fi, перевірку з'єднання з хабом, отримання конфігурацій, налаштування пінів, калібрування ваг, обробку отриманих даних з датчиків тощо. Діаграма діяльності відображена на рисунку 3.
+Спочатку пристрій вмикається і підключається до WiFi, потім перевіряється з'єднання з хабом, отримується конфігурація з карти пам'яті та серверу. Після цього відбувається перевірка отримання відповіді з серверу. Якщо сервер надав відповідні конфігураційні дані, то програма продовжує виконання. Якщо сервер не надав відповіді, то виводиться повідомлення про помилку. Далі відбувається налаштування пінів. На цьому конфігурування закінчується і починається перевірка взаємодії користувача з системою. Якщо користувач натиснув на кнопку калібрування ваг, то система обнуляє значення ваг, переналаштовує датчик навантаження та підсвічує індикатор успішного налаштування. Якщо користувач натиснув кнопку отримання конфігурації з серверу, то мікроконтролер отримує оновлену конфігурацію з серверу і підсвічує індикатор успішного налаштування. Після цього відбувається зчитування інформації з усіх датчиків до того моменту, поки не відбудеться 10 зчитувань за короткий проміжок часу. Якщо 10 зчитувань відбулося, вулик розраховує середнє значення з датчиків. Далі відбувається перевірка на критичні значення. Якщо одне з отриманих значень датчиків більше чи менше критичного значення, то повинні вжитися заходи щодо регулювання мікроклімату у вулику. Наприкінці отримані дані передаються до хабу. Цикл зчитування інформації з датчиків повторюються, поки користувач не ініціює вимкнення системи.
+
+5 ПОБУДОВА ДІАГРАМИ ПАКЕТІВ
+
+Діаграма пакетів відображає взаємодію між компонентами, модулями та зовнішніми бібліотеками, з яких складається програмна система. Діаграма пакетів відображена на рисунку 4.
+Основний пакет - ApexiBee Smart Hive Device. Він інтегрує конфігураційну структуру (Config Structure), сервіс агрегованих даних з сенсорів (Aggregated Sensor Data Service), менеджер конфігурацій (Config Manager), утиліту часу (Time Util) та сервіс відправки даних сенсорів (Sensor Send Service). Він використовує бібліотеку для роботи з SD-картами (SD card library), бібліотеку для сенсора HX711 (HX711 sensor library), бібліотеку сенсорів DHT для ESPx (DHT sensor lib for ESPx) та бібліотеку ArduinoJson.
+Config Structure забезпечує структуру конфігураційних даних.
+Aggregated Sensor Data Service надає послуги з агрегування даних сенсорів
+Config Manager керує конфігураціями системи.
+Time Util надає утиліти для роботи з часом.
+Sensor Send Service забезпечує функціонал відправки даних сенсорів на сервер.
+SD card library використовується  для роботи з SD-картами.
+HX711 sensor library використовується  для інтеграції з сенсором ваги HX711.
+DHT sensor lib for ESPx використовується для інтеграції з сенсорами DHT22.
+ArduinoJson використовується для роботи з форматом JSON.
+
+ВИСНОВКИ
+
+В ході виконання лабораторної роботи було спроектовано та розроблено програмне забезпечення для розумних пристроїв системи та наведено опис прийнятих в процесі розробки інженерних рішень. При розробці та проектуванні програмного продукту були дотримані основні вимоги для підтримки чистоти коду та масштабованості архітектури.
+Посилання на відеоролик з тестуванням розумного пристрою: https://www.youtube.com/watch?v=_NBfJ3ZZeUU
+
+ДОДАТОК А
+Програмний код основного файлу для роботи вулику
+
+1.	#include <WiFi.h>
+2.	#include <HX711.h>
+3.	#include <DHTesp.h>
+4.	#include <SD.h>
+5.	#include "sensor_send_service.h"
+6.	#include "agregated_sensor_data_service.h"
+7.	#include "config_manager.h"
+8.	#include "config_structure.h"
+9.	#include "time_util.h"
+10.	
+11.	const char* ssid = "Wokwi-GUEST";
+12.	const char* password = "";
+13.	const char* configFile = "/config.json";
+14.	
+15.	const float BETA = 3950;
+16.	const float WEIGHT_COEF = 419;
+17.	
+18.	const int CS_PIN = 5;
+19.	const int DHT_PIN = 22;
+20.	const int HX_DT_PIN = 4;
+21.	const int HX_SCK_PIN = 0;
+22.	const int BUTTON_PIN = 25;
+23.	const int LED_PIN = 32;
+24.	const int SETUP_BUTTON_PIN = 26;
+25.	
+26.	DHTesp dhtSensor;
+27.	HX711 loadSensor;
+28.	int button_state;
+29.	int setup_button_state;
+30.	int led_state = LOW;
+31.	
+32.	ConfigManager configManager;
+33.	ServerInteractionService serverInteractionService;
+34.	AgregatedSensorDataService agregatedSensorDataService(5);
+35.	
+36.	void setupWiFi() {
+37.	  Serial.println("Connecting to wifi...");
+38.	  while (WiFi.status() != WL_CONNECTED) {
+39.	    WiFi.begin(ssid, password, 6);
+40.	    delay(1000);
+41.	    Serial.println("Retry..");
+42.	  }
+43.	
+44.	  Serial.println("Connected to WiFi");
+45.	}
+46.	
+47.	void syncTime() {
+48.	  configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+49.	  Serial.print("Waiting for time");
+50.	  time_t now = time(nullptr);
+51.	  while (now < 8 * 3600 * 2) {
+52.	      Serial.print(".");
+53.	      delay(1000);
+54.	      now = time(nullptr);
+55.	  }
+56.	
+57.	  Serial.println();
+58.	  Serial.println("Time synchronized");
+59.	}
+60.	
+61.	void setup() {
+62.	  Serial.begin(115200);
+63.	  Serial.println("Esp32 started.");
+64.	  
+65.	  // WiFi setup 
+66.	  setupWiFi();
+67.	
+68.	  // DHT setup (humidity and temp)
+69.	  dhtSensor.setup(DHT_PIN, DHTesp::DHT22);
+70.	  Serial.println("DHT setup completed");
+71.	
+72.	  // HX711/710 setup (weight/load sensor)
+73.	  loadSensor.begin(HX_DT_PIN, HX_SCK_PIN);
+74.	  //loadSensor.set_scale(2280.f);
+75.	  loadSensor.tare();
+76.	  Serial.println("HX setup completed");
+77.	
+78.	  // Button and LED setup
+79.	  pinMode(BUTTON_PIN, INPUT_PULLUP);
+80.	  pinMode(LED_PIN, OUTPUT);
+81.	  pinMode(SETUP_BUTTON_PIN, INPUT_PULLUP);
+82.	
+83.	  // Config initilizing
+84.	  if (!SD.begin(CS_PIN)) {
+85.	    Serial.println("Card initialization failed!");
+86.	    while (true);
+87.	  }
+88.	  configManager.loadFromFile(configFile);
+89.	
+90.	  Config config = configManager.getConfig();
+91.	  String serverConfigUrl = config.serverUrl + "/api/Apiary/hive/configuration/" + config.hiveId;
+92.	  bool serverConfigResult = configManager.loadFromServer(serverConfigUrl.c_str());
+93.	  if(serverConfigResult == false) {
+94.	    Serial.println("An error occurred while retrieving the configuration from the server. Restart the application and try again");
+95.	    while(true) {
+96.	      
+97.	    }
+98.	  } 
+99.	
+100.	  configManager.printCurrentConfig();
+101.	
+102.	  serverInteractionService.initialize(config.serverUrl);
+103.	  Serial.println("Server url initialized as " + config.serverUrl);
+104.	
+105.	  // Time configuration
+106.	  syncTime();
+107.	  Serial.println("Initialization done.");
+108.	}
+109.	
+110.	void loop() {
+111.	  // weight calibration
+112.	  button_state = digitalRead(BUTTON_PIN);
+113.	  if (button_state == LOW) {
+114.	    Serial.println("Weight calibration");
+115.	    loadSensor.tare();
+116.	    led_state = HIGH;
+117.	    Serial.println("Weight calibration completed");
+118.	  }
+119.	  else {
+120.	    led_state = LOW;
+121.	  }
+122.	
+123.	  // setup from server
+124.	  setup_button_state = digitalRead(SETUP_BUTTON_PIN);
+125.	  if (setup_button_state == LOW) {
+126.	    Serial.println("Getting setup Data from server");
+127.	  
+128.	    Config config = configManager.getConfig();
+129.	    String serverConfigUrl = config.serverUrl + "/api/Apiary/hive/configuration/" + config.hiveId;
+130.	    bool serverConfigResult = configManager.loadFromServer(serverConfigUrl.c_str());
+131.	    if(serverConfigResult == false) {
+132.	      Serial.println("An error occurred while retrieving the configuration from the server. Restart the application and try again");
+133.	      while(true) {
+134.	        
+135.	      }
+136.	    } 
+137.	    configManager.printCurrentConfig();
+138.	
+139.	  }
+140.	
+141.	  digitalWrite(LED_PIN, led_state);
+142.	
+143.	  TempAndHumidity data = dhtSensor.getTempAndHumidity();
+144.	  float weightData = loadSensor.get_units() / WEIGHT_COEF;
+145.	  String currentTime = getUtcTime();
+146.	  Config config = configManager.getConfig();
+147.	  Serial.print("--- ");
+148.	  Serial.print(currentTime);
+149.	  Serial.println(" ---");
+150.	  Serial.println("Temp: " + String(data.temperature, 2) + "°C");
+151.	  Serial.println("Humidity: " + String(data.humidity, 1) + "%");
+152.	  Serial.println("Weight: " + String(weightData) + "kg");
+153.	
+154.	  bool tempToSend = agregatedSensorDataService.addTempReading(data.temperature);
+155.	  if(tempToSend) {
+156.	    float agregatedTemp = agregatedSensorDataService.getAverageTemp();
+157.	    agregatedSensorDataService.compareToCritical("temp", config.criticalTempHigh, config.criticalTempLow, agregatedTemp);
+158.	    serverInteractionService.sendSensorData(agregatedTemp, config.tempSensorId, config.hubId, currentTime);
+159.	    agregatedSensorDataService.resetTemp();
+160.	  }
+161.	
+162.	  bool humidityToSend = agregatedSensorDataService.addHumidityReading(data.humidity);
+163.	  if(humidityToSend) {
+164.	    float agregatedHumidity = agregatedSensorDataService.getAverageHumidity();
+165.	    agregatedSensorDataService.compareToCritical("humidity", config.criticalHumidityHigh, config.criticalHumidityLow, agregatedHumidity);
+166.	    serverInteractionService.sendSensorData(agregatedHumidity, config.humiditySensorId, config.hubId, currentTime);
+167.	    agregatedSensorDataService.resetHumidity();
+168.	  }
+169.	
+170.	  bool weightToSend = agregatedSensorDataService.addWeightReading(weightData);
+171.	  if(weightToSend) {
+172.	    float agregatedWeight = agregatedSensorDataService.getAverageWeight();
+173.	    serverInteractionService.sendSensorData(agregatedWeight, config.weightSensorId, config.hubId, currentTime);
+174.	    agregatedSensorDataService.resetWeight();
+175.	  }
+176.	  delay(2500);
+177.	}
+
+ДОДАТОК Б
+Програмний код сервісу для надсилання даних з датчиків на сервер
+
+1.	#include "sensor_send_service.h"
+2.	
+3.	void ServerInteractionService::initialize(const String& serverUrl) {
+4.	  serverUrl_ = serverUrl;
+5.	}
+6.	
+7.	bool ServerInteractionService::sendSensorData(float sensorValue, const String& sensorId, const String& hubId, const String& timestamp) {
+8.	    if (WiFi.status() == WL_CONNECTED) {
+9.	        HTTPClient http;
+10.	        String fullUrl = String(serverUrl_) + "/api/Sensor/readings/hub/" + hubId;
+11.	        http.begin(fullUrl);
+12.	        http.addHeader("Content-Type", "application/json");
+13.	
+14.	        String payload = "[{";
+15.	        payload += "\"value\": " + String(sensorValue) + ",";
+16.	        payload += "\"sensorId\": \"" + sensorId + "\",";
+17.	        payload += "\"readingDate\": \"" + timestamp + "\"";
+18.	        payload += "}]";
+19.	        Serial.println(fullUrl);
+20.	        Serial.println(payload);
+21.	        int httpResponseCode = http.POST(payload);
+22.	        bool success = httpResponseCode > 0 && httpResponseCode < 300;
+23.	
+24.	        if (success) {
+25.	            Serial.println("Data sent successfully: " + String(httpResponseCode));
+26.	        } else {
+27.	            Serial.println("Error sending data: " + String(httpResponseCode));
+28.	        }
+29.	        
+30.	        http.end();
+31.	        return success;
+32.	    } else {
+33.	        Serial.println("Wi-Fi not connected");
+34.	        return false;
+35.	    }
+36.	}
+
+ДОДАТОК В
+Програмний код виконуваного файлу менеджеру конфігурації
+
+1.	#include <ArduinoJson.h>
+2.	#include <FS.h>
+3.	#include <WiFi.h>
+4.	#include <SD.h>
+5.	#include <HTTPClient.h>
+6.	#include "config_manager.h"
+7.	
+8.	bool ConfigManager::loadFromFile(const char* filename) {
+9.	    File file = SD.open(filename, FILE_READ);
+10.	    if (!file) {
+11.	        Serial.print("Failed to open config file; filename: ");
+12.	        Serial.println(filename);
+13.	        return false;
+14.	    }
+15.	
+16.	    size_t size = file.size();
+17.	    std::unique_ptr<char[]> buf(new char[size]);
+18.	
+19.	    file.readBytes(buf.get(), size);
+20.	    file.close();
+21.	
+22.	    StaticJsonDocument<512> doc;
+23.	    DeserializationError error = deserializeJson(doc, buf.get());
+24.	
+25.	    if (error) {
+26.	        Serial.print("deserializeJson() failed: ");
+27.	        Serial.println(error.c_str());
+28.	        return false;
+29.	    }
+30.	
+31.	    config_.criticalHumidityHigh = doc["criticalHumidityHigh"].as<float>();
+32.	    config_.criticalHumidityLow = doc["criticalHumidityLow"].as<float>();
+33.	    config_.criticalTempHigh = doc["criticalTempHigh"].as<float>();
+34.	    config_.criticalTempLow = doc["criticalTempLow"].as<float>();
+35.	    config_.humiditySensorId = doc["humiditySensorId"].as<String>();
+36.	    config_.weightSensorId = doc["weightSensorId"].as<String>();
+37.	    config_.tempSensorId = doc["tempSensorId"].as<String>();
+38.	    config_.hiveId = doc["hiveId"].as<String>();
+39.	    config_.serverUrl = doc["serverUrl"].as<String>();
+40.	
+41.	    Serial.println("Config loaded from file");
+42.	    return true;
+43.	}
+44.	
+45.	bool ConfigManager::loadFromServer(const char* serverUrl) {
+46.	    if (WiFi.status() != WL_CONNECTED) {
+47.	        Serial.println("WiFi not connected");
+48.	        return false;
+49.	    }
+50.	
+51.	    HTTPClient http;
+52.	    Serial.print("Getting configuration from ");
+53.	    Serial.println(serverUrl);
+54.	    http.begin(serverUrl);
+55.	    int httpResponseCode = http.GET();
+56.	
+57.	    if (httpResponseCode > 0) {
+58.	        String payload = http.getString();
+59.	        Serial.println("Received payload: " + payload);
+60.	
+61.	        StaticJsonDocument<512> doc;
+62.	        DeserializationError error = deserializeJson(doc, payload);
+63.	
+64.	        if (error) {
+65.	            Serial.print("deserializeJson() failed: ");
+66.	            Serial.println(error.c_str());
+67.	            return false;
+68.	        }
+69.	
+70.	        if(httpResponseCode == 404) {
+71.	          Serial.println("Error while configuring");
+72.	          Serial.println(doc["error"].as<String>());
+73.	          return false;
+74.	        }
+75.	
+76.	        config_.hiveId = doc["hiveId"].as<String>();
+77.	        config_.humiditySensorId = doc["humiditySensorId"].as<String>();
+78.	        config_.weightSensorId = doc["weightSensorId"].as<String>();
+79.	        config_.tempSensorId = doc["tempSensorId"].as<String>();
+80.	        config_.hubId = doc["hubId"].as<String>();
+81.	        config_.criticalHumidityHigh = doc["criticalHumidityHigh"].as<float>();
+82.	        config_.criticalHumidityLow = doc["criticalHumidityLow"].as<float>();
+83.	        config_.criticalTempHigh = doc["criticalTempHigh"].as<float>();
+84.	        config_.criticalTempLow = doc["criticalTempLow"].as<float>();
+85.	        return true;
+86.	    } else {
+87.	        Serial.print("Error on HTTP request: ");
+88.	        Serial.println(httpResponseCode);
+89.	        return false;
+90.	    }
+91.	
+92.	    http.end();
+93.	}
+94.	
+95.	const Config& ConfigManager::getConfig() const {
+96.	    return config_;
+97.	}
+98.	
+99.	void ConfigManager::printCurrentConfig() {
+100.	  Serial.println("Current configuration:");
+101.	  Serial.println("> Hive Id: " + config_.hiveId);
+102.	  Serial.println("> Humidity Sensor Id: " + config_.humiditySensorId);
+103.	  Serial.println("> Weight Sensor Id: " + config_.weightSensorId);
+104.	  Serial.println("> Temperature Sensor Id: " + config_.tempSensorId);
+105.	  Serial.println("> Hub Id: " + config_.hubId);
+106.	  Serial.println("> Critical Humidity High: " + String(config_.criticalHumidityHigh));
+107.	  Serial.println("> Critical Humidity Low: " + String(config_.criticalHumidityLow));
+108.	  Serial.println("> Critical Temperature High: " + String(config_.criticalTempHigh));
+109.	  Serial.println("> Critical Temperature Low: " + String(config_.criticalTempLow));
+110.	  Serial.println("> Server URL: " + config_.serverUrl);
+111.	}
+
+ДОДАТОК Г
+Програмний код сервісу для збору даних з датчиків
+
+1.	#include <numeric> 
+2.	#include "agregated_sensor_data_service.h";
+3.	
+4.	AgregatedSensorDataService::AgregatedSensorDataService(int n) : readingsNumber(n) 
+5.	{ }
+6.	
+7.	bool AgregatedSensorDataService::addHumidityReading(float value) {
+8.	  humidityData.push_back(value);
+9.	  if(humidityData.size() > readingsNumber) {
+10.	    return true;
+11.	  }
+12.	  return false;
+13.	}
+14.	
+15.	bool AgregatedSensorDataService::addTempReading(float value) {
+16.	  tempData.push_back(value);
+17.	  if(tempData.size() > readingsNumber) {
+18.	    return true;
+19.	  }
+20.	  return false;
+21.	}
+22.	
+23.	bool AgregatedSensorDataService::addWeightReading(float value) {
+24.	  weightData.push_back(value);
+25.	  if(weightData.size() > readingsNumber) {
+26.	    return true;
+27.	  }
+28.	  return false;
+29.	}
+30.	
+31.	float AgregatedSensorDataService::countAverageSensorData(const std::vector<float>& values) {
+32.	  if (values.empty()) {
+33.	        return 0.0f;
+34.	    }
+35.	
+36.	    float sum = std::accumulate(values.begin(), values.end(), 0.0f);
+37.	    float average = sum / values.size();
+38.	    return average;
+39.	}
+40.	
+41.	float AgregatedSensorDataService::getAverageHumidity() {
+42.	  return countAverageSensorData(humidityData);
+43.	}
+44.	
+45.	float AgregatedSensorDataService::getAverageTemp() {
+46.	  return countAverageSensorData(tempData);
+47.	}
+48.	
+49.	float AgregatedSensorDataService::getAverageWeight() {
+50.	  return countAverageSensorData(weightData);
+51.	}
+52.	
+53.	void AgregatedSensorDataService::resetHumidity() {
+54.	  humidityData.clear();
+55.	}
+56.	
+57.	void AgregatedSensorDataService::resetTemp() {
+58.	  tempData.clear();
+59.	}
+60.	
+61.	void AgregatedSensorDataService::resetWeight() {
+62.	  weightData.clear();
+63.	}
+64.	
+65.	void AgregatedSensorDataService::reset() {
+66.	  resetHumidity();
+67.	  resetTemp();
+68.	  resetWeight();
+69.	}
+70.	
+71.	void AgregatedSensorDataService::compareToCritical(const String& paramName, float highValue, float lowValue, float currentValue) {
+72.	    if(currentValue > highValue)
+73.	    {
+74.	      Serial.println(">> Current " + paramName + "(" + String(currentValue) + ") is higher than critical (" + String(highValue) + ") by "+ String(currentValue - highValue) + " <<");
+75.	    }
+76.	    if(currentValue < lowValue)
+77.	    {
+78.	      Serial.println(">> Current " + paramName + "(" + String(currentValue) + ") is lower than critical (" + String(lowValue) + ") by "+ String(lowValue - currentValue) +" <<");
+79.	    }
+80.	}
