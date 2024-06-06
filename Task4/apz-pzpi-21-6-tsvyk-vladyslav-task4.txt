@@ -1,0 +1,753 @@
+1 АРХІТЕКТУРА СИСТЕМИ ТА ПРОГРАМНІ ЗАСОБИ
+
+Для створення клієнтської частини використовується платформа Angular, що створена з використанням мови TypeScript, який у свою чергу є розширенням для JavaScript. Angular дозволяє створювати масштабовані проекти, які складаються з багатьох модулів і компонентів. При створенні системи використовуються деякі стандартні елементи керування та відображення з бібліотеки primeng, яка містить велику кількість різних елементів для створення користувацьких інтерфейсів. Для задання стилів використовується розширення для таблиць каскадних стилів SCSS.
+Клієнтський веб-застосунок повинен взаємодіяти з серверною частиною. Angular передбачає створення веб-застосунків, які складаються з однієї HTML-сторінки з вбудованою маршрутизацію, яка дозволяє завантажувати потрібні ресурси по мірі необхідності і відображати їх кінцевому користувачу.
+Код Angular застосунку розділено на модулі та компоненти, відповідно до завдань, які виконуються цими частинами програми.
+Реалізовано підтримку української та англійської мови на більшості сторінках для підтримки локалізації. За локалізацію відповідає сервіс, який отримує данні із заздалегідь підготовлених файлів у форматі json, які містять переклади певних слів та словосполучень, і передає їх у компоненти для відображення.
+Реалізовано підтримку різних часових поясів. У налаштуваннях можливо обрати різні часові пояси відносно UTC. Реалізовано підтримку різних форматів дати та часу в усіх частинах застосунку та різних валют. Усі налаштування локалізації та інтернаціоналізації зберігаються локально на пристрої користувачів. Також передбачено переведення одиниць вимірюванння (кілограми у фунти, градуси Цельсія у градуси Фаренгейта і навпаки).
+Локалізація та інтернаціоналізація виконана за допомогою засобів, які надає платформа Angular.
+Окрім бізнес-логіки реалізовано підтримку адміністрування системи, а саме можливість адміністраторів створювати резервні копії бази даних, переглядати останню дату резервного копіювання та можливість відновлювати базу даних з резервної копії.
+Для забезпечення безпеки даних передбачено декілька механізмів. При введенні конфіденційних даних, таких як паролі, вони відображаються на екрані у вигляді, недоступному для читання. При авторизації користувачів використовується технологія JSON Web Token, яка дозволяє зберігати сесію авторизації у зашифрованому вигляді. Паролі між клієнтом та сервером передаються у зашифрованому вигляді.
+При користуванні застосунком виключно англійською мовою можливе використання не тільки стандарту кодування UTF-8, а ще й ASCII. 
+Під час розробки програмної системи дотримано вимог чистого коду та масштабованості системи. Для правильного найменування файлів та елементів програмного коду використано code convention для платформи Angular та мови TypeScript.
+
+2 ПОБУДОВА ДІАГРАМИ ПРЕЦЕДЕНТІВ
+
+На діаграмі прецедентів відображаються дії усіх акторів для взаємодії з клієнтською частиною. З системою напряму взаємодіють бджоляр, клієнт та адміністратор.
+Бджоляр має можливість встановлювати зв'язок між пристроями та налаштовувати пристрої (з карти пам'яті чи серверу). Він також може отримувати інформацію з датчиків, таку як вологість повітря у вулику, активність бджіл, температуру та вагу меду у вуликах. Крім того, бджоляр отримує сповіщення про критичні показники вологості та температури у вуликах.
+Можливості користувачів за ролями:
+1. Адміністратор системи:
+- Аутентифікація та авторизація.
+- Робота з базою даних: Адміністратор системи має можливість керувати базою даних, включаючи виконання резервного копіювання (бекапу) та відновлення даних з бекапу.
+	- Перегляд дати останнього бекапу
+	- Бекап бази даних
+	- Відновлення даних з бекупу
+- Робота з акаунтами менедежрів.
+	- Створення аккаунтів для менеджерів
+	- Зміна інформації про менеджерів
+2. Бджоляр:
+- Аутентифікація та авторизація: Бджоляр виконує вхід до системи та проходить перевірку прав доступу.
+- Створення аккаунту: Можливість створення нового аккаунту для доступу до системи.
+- Перегляд своїх пасік: Бджоляр може переглядати інформацію про свої пасіки.
+	- Додавання вуликів
+	- Перегляд вуликів пасіки
+	- Перегляд детальної інформації про вулик
+	- Отримання даних з датчиків за різні періоди
+	- Перегляд датчиків, під'єднаних до вуликів
+	- Перегляд детальної інформації про датчики
+	- Отримання середнього значення датчика за день
+	- Перегляд діаграми з датчиків за останні 24 години
+- Перегляд власних замовлень: Бджоляр може переглядати свої замовлення
+3. Менеджер
+- Аутентифікація та авторизація: Менеджер виконує вхід до системи та проходить перевірку прав доступу.
+- Перегляд замовлень на обладнання: Менеджер має доступ до всіх замовлень на обладнання.
+	- Підтвердження замовлень
+	- Завершення замовлень
+	- Створення нових замовлень
+- Управління обладнанням: Менеджер може переглядати, додавати, видаляти обладнання та створювати нові серійні номери.
+	- Перегляд усього обладнання
+	- Додавання обладнання
+	- Видалення обладнання
+	- Створення нових серійних номерів
+	- Фільтрація за типом обладнання
+
+3 ПОБУДОВА ДІАГРАМИ ПАКЕТІВ
+
+Діаграма пакетів відображає взаємодію між компонентами, модулями та зовнішніми бібліотеками, з яких складається програмна система.
+В основі усього застосунку знаходиться головний модуль – Application module, до якого приєднуються усі інші модулі. За доступ користувачів до певних endpoints відповідає модуль маршрутизації (Router module). Він визначає, які модулі та компоненти треба завантажувати при запиті певної кінцевої точки користувачем.
+Уся бізнес-логіка розділена між різними модулями (Apiary module, Profile module, Order module, Admin module, Settings module, Auth module, Equipment module, Home module), відповідно до частини функціоналу, за яку відповідає цей модуль.
+Admin module містить усю логіку та компоненти для роботи адміністратора.
+Orders module відповідає за усі замовлення клієнтів.
+Auth module містить усі компоненти для авторизації.
+Profile module відповідає за сторінку профілю користувача.
+Home module - це початкові сторінки з основною інформацією.
+Apiary module - модуль для роботи з пасіками та вуликами.
+Equipment module відповідає за роботи з обладнанням та серійними номерами.
+
+4 ПОБУДОВА ДІАГРАМИ ДІЯЛЬНОСТІ
+
+Діаграма діяльності демонструє процес взаємодії користувача з системою. Вона дозволяє побачити потік виконня програми. На цій діаграмі продемонстровано роботу бджоляра з системою.
+Спочатку бджоляр має авторизуватися у системі. Якщо у нього не встановлені потрібні налаштування він може перейти на сторінку з налаштуваннями та змінити їх. Після цього є три шляхи:
+1. Користувач обирає у меню пункт "замовлення". Бджоляр натискає на відповідну кнопку, переходить на сторінку з власними замовленнями, переглядає їх список, може переглянути детальну інформацію про них, після цього повертається у головне меню.
+2. Користувач обирає у меню пункт зі списком власних пасік. Якщо потрібні пасіки не додані - користувач переходить на сторінку створення пасіки, додає її. Після цього підтверджує її створення та за потреби додає стандартні критичні значення для датчиків або вводить їх власноруч. Після створення пасіки користувач переходить на сторінку з детальною інформацією про пасіку. Якщо немає потрібних вуликів - користувач додає їх. За потреби можна додати датчики власноруч або додати стандартний набір датчиків. Після цього відбувається перехід на сторінку з деталями вулика. Після перегляду даних з датчиків користувач повертається у меню.
+3. Користувач обирає пункт меню "профіль". У профілі користувач може вийти з акаунту.
+
+5 ПОБУДОВА ДІАГРАМИ КОМПОНЕНТІВ
+
+Дана діаграма компонентів відображає взаємодію клієнтського застосунку з зовнішніми сутностями.
+Клієнтський веб-застосунок повинен взаємодіяти з серверною частиною. Angular передбачає створення веб-застосунків, які складаються з однієї HTML-сторінки з вбудованою маршрутизацію, яка дозволяє завантажувати потрібні ресурси по мірі необхідності і відображати їх кінцевому користувачу.
+Компонент "Local Storage Data" зберігає дані локального сховища, такі як токени та налаштування, і передає їх компоненту "API Services" для подальших запитів. 
+Компонент "User" відправляє запити до компонента "Router". Компонент "WebAPI" обробляє запити від компонента "User" та перенаправляє їх до компонента "API Services". 
+Компонент "API Services" відповідає за виконання бекенд-запитів, отримує дані з локального сховища та повертає контент, який передається компоненту "page content". 
+Компонент "Router" обробляє кінцеві точки запитів (endpoint query) та направляє користувача до потрібного контенту. 
+Компонент "Aggregate components - lists" агрегує та відображає списки сутностей. 
+Компонент "Page content" показує контент, отриманий від сервісу API, та має місце для внутрішнього контенту (router outlet). 
+Компонент "Main page" є основним скелетом сторінки, отримує скелет сторінки та відображає його користувачу. 
+Ці компоненти взаємодіють між собою для надання даних, відображення інформації користувачу, обробки запитів та роботи з бекендом.
+
+ВИСНОВКИ
+
+В ході виконання лабораторної роботи було спроектовано та розроблено програмне забезпечення для клієнтської частини системи та наведено опис прийнятих в процесі розробки інженерних рішень. 
+При розробці та проектуванні програмного продукту були дотримані основні вимоги для підтримки чистоти коду та масштабованості архітектури.
+Посилання на відеоролик з тестуванням клієнтського застосунку: https://www.youtube.com/watch?v=9tSZS9mXQGk
+
+ДОДАТОК А
+Ресурсний файл з локалізацією українською мовою
+{
+    "users" : {
+        "admin" : "Адміністратор",
+        "manager" : "Менеджер",
+        "client" : "Бджоляр",
+        "beekeeper" : "Бджоляр"
+    },
+    
+    "profile" : {
+        "welcome" : "Вітаємо! Ви увійшли як"
+    },
+
+    "managers" : {
+        "managers" : "Менеджери",
+        "addManager" : "Додати менеджера"
+    },
+
+    "general" : {
+        "logIn" : "Авторизація",
+        "logOut" : "Вийти з аккаунту",
+        "signUp" : "Реєстрація",
+        "profile" : "Профіль",
+        "backHome" : "Повернутися на головну сторінку",
+        "about" : "Про нас",
+        "start" : "Почати роботу",
+        "sortBy" : "Сортування",
+        "delete" : "Видалити",
+        "modify" : "Змінити дані",
+        "username" : "Користувач",
+        "firstName" : "Ім'я",
+        "lastName" : "Прізвище"
+    },
+
+    "menu" : {
+        "menu" : "Меню",
+        "orders" : "Замовлення",
+        "apiaries" : "Пасіки",
+        "managers" : "Менеджери",
+        "database" : "База даних"
+    },
+
+    "database" : {
+        "databaseAdmin" : "Адміністрування бази даних",
+        "lastBackup" : "Дата останнього бекапу",
+        "createBackup" : "Створити резервну копію",
+        "restoreDatabase" : "Відновити базу даних"
+    },
+
+    "home" : {
+        "intro" : "Розумна пасіка для Розумних бджолярів"
+    },
+
+    "auth" : {
+        "signUpInfo" : "Ви можете зареєструватися як бджоляр",
+        "username" : "Ім'я користувача",
+        "password" : "Пароль",
+        "repeatPassword" : "Повторіть пароль",
+        "email" : "Електронна пошта",
+        "gotoSignIn" : "Вже маєте аккаунт?",
+        "gotoSignUp" : "Перейти до реєстрації"
+    },
+
+    "settings" : {
+        "language" : "Мова",
+        "dataFormat" : "Формат дати",
+        "timeFormat" : "Формат часу",
+        "timeZone" : "Часовий пояс",
+        "applyChanges" : "Прийняти зміни",
+        "settings" : "Налаштування"
+    },
+    
+    "apiary" : {
+        "addApiary" : "Створити пасіку"
+    },
+
+    "footer" : {
+        "help" : "Допомога",
+        "about" : "Про нас",
+        "credentials" : "Контакти",
+        "privacy" : "Конфіденційність"
+    },
+
+    "hive" : {
+        "hive" : "Вулик",
+        "hives" : "Вулики"
+    },
+
+    "order" : {
+        "clientOrders" : "Замовлення клієнта",
+        "allOrders" : "Усі замовлення",
+        "createOrder" : "Створити замовлення",
+        "order" : "Замовлення",
+        "orderDate" : "Дата замовлення",
+        "status" : "Статус",
+        "processOrder" : "Обробити замовлення"
+    }
+}
+
+ДОДАТОК Б
+Програмний код компоненту для роботи з вуликами
+import { DatePipe } from '@angular/common';
+import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Chart } from 'chart.js';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { forkJoin } from 'rxjs';
+import { ApiaryService } from 'src/app/services/api/apiary.service';
+import { AuthService } from 'src/app/services/api/auth.service';
+import { SensorService } from 'src/app/services/api/sensor.service';
+import { ConverterService } from 'src/app/services/converter.service';
+import { LocalizationService } from 'src/app/services/localization.service';
+import { Hive } from 'src/app/shared/models/hive';
+import { Sensor, SensorReading } from 'src/app/shared/models/sensor';
+
+@Component({
+  providers: [DatePipe],
+  selector: 'app-hive-details-page',
+  templateUrl: './hive-details-page.component.html',
+  styleUrls: ['./hive-details-page.component.scss']
+})
+export class HiveDetailsPageComponent implements OnInit {
+    currentHive!: Hive
+    hiveSensors!: Sensor[]
+    dateFormat!: string;
+    lastReadings: SensorReading[] = []
+
+    @ViewChildren('chart1', { read: Chart }) chart1!: QueryList<Chart>;
+    @ViewChildren('chart2', { read: Chart }) chart2!: QueryList<Chart>;
+    @ViewChildren('chart3', { read: Chart }) chart3!: QueryList<Chart>;
+    @ViewChildren('chart4', { read: Chart }) chart4!: QueryList<Chart>;
+
+    // chart
+    data: any = [];
+    options: any;
+
+    temperatureUnits = "°C";
+    weightUnits = "kg";
+
+    constructor(
+        private router: Router,
+        private messageService: MessageService,
+        private confirmationService: ConfirmationService,
+        private converterService: ConverterService,
+        public localizationService: LocalizationService, 
+        private route: ActivatedRoute, 
+        private datePipe: DatePipe,
+        private authService : AuthService, 
+        private sensorService: SensorService, 
+        private apiaryService: ApiaryService) {
+    }
+
+    ngOnInit(): void {
+        this.dateFormat = this.localizationService.getCorrectLocalizedDateFormat();
+        this.route.params.subscribe(params => {
+            const hiveId = params['id'];
+            this.apiaryService.getHiveById(hiveId).subscribe((res) => {
+                this.currentHive = res;
+            })
+            this.sensorService.getAllHiveSensors(hiveId).subscribe((res) => {
+                this.hiveSensors = res;
+
+                const observables = this.hiveSensors.map(sensor =>
+                    this.sensorService.getSensorWithType(sensor.id)
+                  );
+                  
+                  forkJoin(observables).subscribe(responses => {
+                    for (let i = 0; i < this.hiveSensors.length; i++) {
+                      const sensor = this.hiveSensors[i];
+                      sensor.sensorType = responses[i].sensorType;
+                    }
+
+                    this.fillSensorData();
+                  });
+
+            })
+            
+            this.sensorService.getLastHiveSensorReadings(hiveId).subscribe((res) => {
+                this.lastReadings = res;
+            })
+        })
+
+        const documentStyle = getComputedStyle(document.documentElement);
+        const textColor = documentStyle.getPropertyValue('--text-color');
+        const textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
+        const surfaceBorder = documentStyle.getPropertyValue('--surface-border');
+
+        this.options = {
+            maintainAspectRatio: false,
+            aspectRatio: 0.9,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: textColor
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: textColorSecondary
+                    },
+                    grid: {
+                        color: surfaceBorder,
+                        drawBorder: false
+                    }
+                },
+                y: {
+                    ticks: {
+                        color: textColorSecondary
+                    },
+                    grid: {
+                        color: surfaceBorder,
+                        drawBorder: false
+                    }
+                }
+            }
+        };
+
+    }
+
+    getSensorLastReading(sensorId: string) {
+        for (let reading of this.lastReadings) {
+            if(reading.sensorId == sensorId) {
+                return reading;
+            }
+        }
+
+        return null;
+    }
+
+    getReadingDate(sensorReading : SensorReading | null) {
+        return sensorReading?.readingDate;
+    }
+
+    getLocalizedValue(sensorType: string, value: number) {
+        return value; 
+    }
+
+    getCorrectActualLocalizedUnits(sensor: Sensor) {
+        if(sensor.sensorType?.name == "temperature") {
+            return this.temperatureUnits;
+        }
+
+        if(sensor.sensorType?.name == "weight") {
+            return this.weightUnits;
+        }
+
+        else {
+            return sensor.sensorType?.measureUnit;
+        }
+    }
+
+    // chart visualizing
+    calculateVisualizingData(sensorReadings: SensorReading[], isTemp: boolean, isWeight: boolean) {
+        const documentStyle = getComputedStyle(document.documentElement);
+
+        for (let reading of sensorReadings) {
+            console.log(reading.readingDate);
+            reading.readingDate = new Date(reading.readingDate);
+        }
+
+        console.log(sensorReadings);
+
+        sensorReadings = sensorReadings.sort((a, b) => a.readingDate.getTime() - b.readingDate.getTime());
+
+        let chartData: number[] = []
+        let chartLabels: any[] = []
+
+        sensorReadings.forEach(item => {
+            chartLabels.push(this.transformDate(item.readingDate));
+            var chartValue = item.value;
+            if(isTemp) {
+                if(this.temperatureUnits == "°F") {
+                    chartValue = this.converterService.celsiusToFahrenheit(item.value);
+                }
+            }
+
+            if(isWeight) {
+                if(this.weightUnits == "lb") {
+                    chartValue = this.converterService.kilogramsToPounds(item.value);
+                }
+            }
+
+            chartData.push(chartValue);
+        });
+
+        let data = {
+            labels: chartLabels,
+            datasets: [
+                {
+                    label: 'Sensor reading',
+                    data: chartData,
+                    fill: false,
+                    borderColor: documentStyle.getPropertyValue('--blue-500'),
+                    tension: 0.4
+                },
+            ]
+        };
+        
+        console.log(data);
+
+        return data;
+    }
+
+    transformDate(date: Date) {
+        var correctDate = this.localizationService.getCorrectLocalizedDate(date);
+        var timeFormat = this.localizationService.getCurrentTimeFormat()?.format;
+        var dateFormat = this.localizationService.getCurrentDataFormat()?.value;
+        console.log(timeFormat, dateFormat);
+        return this.datePipe.transform(correctDate, timeFormat + " " + dateFormat);
+    }
+
+    fillSensorData() {
+        var currentMoment = new Date();
+        var twentyFourHoursAgo  = new Date(currentMoment.getTime() - (24 * 60 * 60 * 1000));
+        for (let i = 0; i < this.hiveSensors.length; i++) {
+            let sensor = this.hiveSensors[i];
+            let currentIndex = i;
+            this.sensorService.getSensorReadingDuringPeriod(sensor.id, twentyFourHoursAgo, currentMoment).subscribe((res) => {
+                var sensorData = res;
+                if(sensor.sensorType?.name == "temperature") {
+                    var calculatedChartData = this.calculateVisualizingData(sensorData, true, false);
+                    this.data[currentIndex] = calculatedChartData;
+                }
+                else if(sensor.sensorType?.name == "weight") {
+                    var calculatedChartData = this.calculateVisualizingData(sensorData, false, true);
+                    this.data[currentIndex] = calculatedChartData;
+                }
+                else {
+                    var calculatedChartData = this.calculateVisualizingData(sensorData, false, false);
+                    this.data[currentIndex] = calculatedChartData;
+                }
+
+            })
+        }
+    }
+
+    onUnitChanged() {
+        this.fillSensorData();
+    }
+
+    getCorrectSensorValue(sensorValue: number, sensorType: string) {
+        if(sensorType == "temperature") {
+            if(this.temperatureUnits == "°F") {
+                return this.converterService.celsiusToFahrenheit(sensorValue);
+            }
+        }
+
+        if(sensorType == "weight") {
+            if(this.weightUnits == "lb") {
+                return this.converterService.kilogramsToPounds(sensorValue);
+            }
+        }
+
+        return sensorValue;
+    }
+
+    activateHive() {
+        this.apiaryService.checkHive(this.currentHive.id).subscribe(() => {
+            this.apiaryService.getHiveById(this.currentHive.id).subscribe((res) => {
+                this.currentHive = res;
+            })
+        });
+    }
+
+    onDeleteButtonClicked() {
+        this.confirmationService.confirm({
+            message: `Are you really want to delete this hive with all sensors?`,
+            header: "Delete confirmation",
+            accept: () => {
+                this.deleteCurrentHive();
+            }
+        })
+    }
+
+    private deleteCurrentHive() {
+        this.apiaryService.deleteHive(this.currentHive.id).subscribe({
+            next: () => { this.messageService.add({severity:'success',summary:'Success',detail:'You have successfully deleted hive'}); this.router.navigate(['/apiary','details']); },
+            error: () => { this.messageService.add({severity:'error',summary:'Error',detail:'Failed to delete hive'}); }
+        })
+    }
+}
+
+ДОДАТОК В
+Програмний код розмітки компоненту для роботи з обладнанням
+<div class="all-equipment">
+    <div class="container">
+        <div class="inner">
+            <h1>Equipment</h1>
+            <div>
+                <p-button icon="pi pi-plus" label="Register equipment" [style]="{marginBottom: '20px'}" (click)="openRegisterEquipment()"></p-button>
+
+                <div class="equipment-table" style="margin-bottom: 10px">
+                    <p-table [value]="equipments" [tableStyle]="{ 'min-width': '50rem' }" [paginator]="true" [rows]="5" [rowsPerPageOptions]="[5, 10]">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Id</th>
+                                <th pSortableColumn="equipmentName">Equipment type <p-sortIcon field="equipmentName"></p-sortIcon></th>
+                                <th>Serial data</th>
+                                <th></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-equipment>
+                            <tr>
+                                <td>{{ equipment.id }}</td>
+                                <td>{{ equipment.equipmentName }}</td>
+                                <td>{{ equipment.serialNumber }}</td>
+                                <td style="padding: 0px">
+                                    <p-button severity="danger" (click)="deleteEquipment(equipment)">{{ 'general.delete' | translate }}</p-button>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p-dialog
+    header="Add equipment"
+    [(visible)]="isAddEquipmentDialogOpened"
+    [modal]="true"
+    [style]="{ minWidth: '250px', width: '20vw' }"
+    [draggable]="false"
+    [resizable]="false">
+    <p style="margin-bottom: 10px;">Choose equipment type</p>
+    <div style="margin-bottom: 10px;">
+        <p-dropdown [style]="{ minWidth: '180px'}" appendTo="body" [(ngModel)]="selectedEquipmentType" [options]="items"></p-dropdown>
+    </div>
+    <div>
+        <button pButton (click)="registerEquipment()">Add equipment</button>
+    </div>
+</p-dialog>
+
+ДОДАТОК Г
+Програмний код сервісу для локазілації
+import { Injectable } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
+import { environment } from '../environments/environment';
+
+@Injectable({
+    providedIn: 'root'
+})
+export class LocalizationService {
+    
+    formats = [
+        {
+            fullLang: "Ukraininan (31.01.2000)",
+            lang: "ua",
+            value: "dd.MM.yyyy"
+        },
+        {
+            fullLang: "USA (01-31-2000)",
+            lang: "usa",
+            value: "MM-dd-yyyy"
+        },
+        {
+            fullLang: "UK (31/01/2000)",
+            lang: "uk",
+            value: "dd/MM/yyyy"
+        }
+    ];
+
+    languages = [
+        {
+            label: "English",
+            value: "en"
+        },
+        {
+            label: "Ukraininan",
+            value: 'uk'
+        }
+    ]
+
+    timeZones = [
+        { label: "UTC-11", value: -11, },
+        { label: "UTC-10", value: -10, },
+        { label: "UTC-9", value: -9, },
+        { label: "UTC-8", value: -8, },
+        { label: "UTC-7", value: -7, },
+        { label: "UTC-6", value: -6, },
+        { label: "UTC-5", value: -5, },
+        { label: "UTC-4", value: -4, },
+        { label: "UTC-3", value: -3, },
+        { label: "UTC-2", value: -2, },
+        { label: "UTC-1", value: -1, },
+        { label: "UTC",   value:  0, },
+        { label: "UTC+1", value:  1, },
+        { label: "UTC+2", value:  2, },
+        { label: "UTC+3", value:  3, },
+        { label: "UTC+4", value:  4, },
+        { label: "UTC+5", value:  5, },
+        { label: "UTC+6", value:  6, },
+        { label: "UTC+7", value:  7, },
+        { label: "UTC+8", value:  8, },
+        { label: "UTC+9", value:  9, },
+        { label: "UTC+10", value: 10, },
+        { label: "UTC+11", value: 11, },
+        { label: "UTC+12", value: 12, },
+        { label: "UTC+13", value: 13, },
+        { label: "UTC+14", value: 14, },
+    ]
+
+    timeFormats = [
+        {
+            label: "12-hour (11:05 PM)",
+            value: "12",
+            format: "hh:mm a"
+        },
+        {
+            label: "24-hour (23:05)",
+            value: "24",
+            format: "HH:mm"
+        }
+    ]
+
+    currencies = ["$", "₴", "€", "£", "¥"]
+
+    constructor(private translateService: TranslateService)
+    {}
+
+    setLanguage(lang: string) {
+        this.translateService.use(lang);
+        localStorage.setItem("language", lang)
+    }
+
+    setDefaultLanguage() {
+        this.translateService.use(environment.defaultLocale)
+        localStorage.setItem("language", environment.defaultLocale)
+    }
+
+    setCurrentDataFormat(type: string) {
+        localStorage.setItem("dataformat", type);
+    }
+
+    setCurrentTimeZone(timezone: number) {
+        localStorage.setItem("timezone", timezone.toString());
+    }
+
+    setCurrentTimeFormat(timeformat: string) {
+        localStorage.setItem("timeformat", timeformat);
+    }
+
+    getCurrentLanguage() : string {
+        var result : string | null = localStorage.getItem("language");
+        if (result == null) {
+            return environment.defaultLocale;
+        }
+        return result;
+    }
+
+    getCurrentDataFormatType() : string {
+        var result = localStorage.getItem("dataformat");
+        if(result == null) {
+            return environment.defaultDateFormat;
+        }
+        return result;
+    }
+    
+    getCurrentDataFormat() {
+        var result = this.getCurrentDataFormatType();
+        const format = this.formats.find(item => item.lang == result);
+        return format
+    }
+
+    getCurrentTimeZone() : number {
+        var result = localStorage.getItem("timezone");
+        if(result == null)
+            return environment.defaultTimeZone;
+        return parseInt(result);
+    }
+
+    getCurrentTimeFormatType() : string {
+        var result = localStorage.getItem("timeformat");
+        if(result == null) {
+            return environment.defaultTimeFormat;
+        }
+        return result;
+    }
+
+    getCurrentTimeFormat() {
+        var result = this.getCurrentTimeFormatType();
+        const format = this.timeFormats.find(item => item.value == result);
+        return format
+    }
+
+    getCorrectLocalizedDateFormat() {
+        return this.getCurrentDataFormat()?.value + " "
+            + this.getCurrentTimeFormat()?.format;
+    }
+
+    getCorrectLocalizedDate(utcDate: Date | null | undefined) {
+        if(utcDate == null || utcDate == undefined) {
+            return null;
+        }
+
+        var newDate = new Date(utcDate);
+        newDate.setHours(newDate.getHours() + this.getCurrentTimeZone());
+        return newDate;
+    }
+}
+
+ДОДАТОК Д
+Програмний код модуля маршрутизації
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { SkeletonComponent } from './pages/skeleton/skeleton.component';
+
+const routes: Routes = [
+    {
+        path: '',
+        component: SkeletonComponent,
+        children: [
+            {
+                path: '', redirectTo: 'home', pathMatch: 'full'
+            },
+            {
+                path: 'home',
+                loadChildren: () => import('./modules/home/home.module').then((m) => m.HomeModule)
+            },
+            {
+                path: 'sign',
+                loadChildren: () => import('./modules/sign-in-up/sign-in-up.module').then((m) => m.SignInUpModule)
+            },
+            {
+                path: 'admin',
+                loadChildren: () => import('./modules/admin/admin.module').then((m) => m.AdminModule)
+            },
+            {
+                path: 'profile',
+                loadChildren: () => import('./modules/profile/profile.module').then((m) => m.ProfileModule)
+            },
+            {
+                path: 'settings',
+                loadChildren: () => import('./modules/settings/settings.module').then((m) => m.SettingsModule)
+            },
+            {
+                path: 'equipment',
+                loadChildren: () => import('./modules/equipment/equipment.module').then(m => m.EquipmentModule)
+            },
+            {
+                path: 'order',
+                loadChildren: () => import('./modules/order/order.module').then((m) => m.OrderModule)
+            },
+            {
+                path: 'apiary',
+                loadChildren: () => import('./modules/apiary/apiary.module').then((m) => m.ApiaryModule)
+            }
+        ]
+    }
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }
