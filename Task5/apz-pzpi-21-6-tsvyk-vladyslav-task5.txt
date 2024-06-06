@@ -1,0 +1,227 @@
+1 АРХІТЕКТУРА СИСТЕМИ ТА ПРОГРАМНІ ЗАСОБИ
+
+Для створення мобільного застосунку використовується платформа Xamarin, яка працює під управлінням .NET і націлена на створення крос-платформних застосунків під управлінням Android, IOS чи Windows 10/11. 
+Xamarin дозволяє створювати один код для усіх платформ, що значно прискорює розробку застосунку, а мова C#, яка використовується при розробці є досить продуктивною. 
+Для розмітки сторінок використовується мова XAML, яка дозволяє створювати гнучкі графічні інтерфейси.
+Програмний мобільний застосунок взаємодіє з серверною частиною по протоколу http.
+Для побудови архітектури застосунку застосовується патерн проектування MVVM. Він складається з 3 основних частин – Model, View та ViewModel. Використання цього патерну дозволяє розділити логіку роботи з даними їх відображення та дизайн застосунку у різні компоненти, що робить програмий код більш гнучким.
+В основі усього застосунку знаходиться головний модуль – Application, до якого приєднуються усі інші модулі, такі як відображення (Views), відображення моделі (ViewModels), статичні ресурси (Resources), об’єкти для передачі даних (DTO), розширення (Extentions), сервіси (Services), а також зовнішні бібліотеки (Xamarin.Essentials, System.Json, System.IdentityModel).
+Користувач взаємодіє з застосунком через View, до якого прив’язуються дані з ViewModel за допомогою механізму Binding, який надає платформа та мова XAML. ViewModel взаємодіє з моделлю і отримує з неї дані. Таким чином програмна система не містить контролерів, на відміну від типових застосунків, побудованих за патерном MVC.
+Додатково у застосунку визначено певні сервіси, які надають інтерфейс для моделей та відображень для взаємодії з серверною частиною, налаштуванням локалізації та інтернаціоналізації.
+Реалізовано підтримку української та англійської мови на усіх сторінках для підтримки локалізації. За локалізацію відповідає розширення, яке отримує данні із заздалегідь підготовлених файлів статичних ресурсів, які містять переклади певних слів та словосполучень у вигляді ключів та локалізованих значень. Це розширення дозволяє відображати перекладені мовні конструкції одразу у відображення за допомогою мови XAML. Мова визначається за встановленою у системі Android локалізацію під час запуску застосунку.
+Реалізовано підтримку різних часових поясів. Локальний час визначається за встановленим у системі Android часовим поясом. У профілі користувача можна переглянути встановлений часовий пояс та час авторизації за локальним часом. Також підтримується відображення дати у форматах місяць - день і день - місяць.
+Для забезпечення безпеки даних передбачено декілька механізмів. При введенні конфіденційних даних, таких як паролі, вони відображаються на екрані у вигляді, недоступному для читання. При авторизації користувачів використовується технологія JSON Web Token, яка дозволяє зберігати сесію авторизації у зашифрованому вигляді. Паролі між клієнтом та сервером передаються у зашифрованому вигляді.
+При користуванні застосунком виключно англійською мовою можливе використання не тільки стандарту кодування UTF-8, а ще й ASCII. 
+Мобільний застосунок повністю інтегрований в систему. Усі зміни, які вносяться з Android пристроїв відображаються у браузерному клієнтському застосунку та у базі даних на сервері.
+
+2 ПОБУДОВА ДІАГРАМИ ПРЕЦЕДЕНТІВ
+
+На діаграмі зображено варіант діаграми випадків використання (use case diagram) для системи управління замовленнями обладнання.
+Основні ролі на діаграмі - це бджоляр і менеджер.
+Основні функції для Бджолара:
+- Автентифікація та авторизація - вхід у систему.
+- Створення акаунту - реєстрація в системі.
+- Перегляд замовлень на обладнання - перегляд списку своїх замовлень.
+- Створення нових пасік - можливість додавання нових пасік до системи.
+- Видалення пасік - можливість видалити пасіки.
+- Перегляд своїх пасік - перегляд переліку власних пасік.
+- Додавання вуликів - можливість додати вулики до пасіки.
+- Перегляд вуликів пасіки - перегляд вуликів у конкретній пасіці.
+- Перегляд детальної інформації про вулики - отримання детальної інформації про кожен вулик.
+- Перегляд датчиків, під'єднаних до вуликів - перегляд інформації про датчики в вуликах.
+- Отримання повідомлень про критичні значення датчиків - отримання сповіщень при виникненні критичних показників від датчиків.
+Основні функції для Менеджера:
+- Створення нових замовлень - можливість створення нових замовлень для клієнтів.
+- Додавання обладнання - можливість додавання нового обладнання до системи.
+- Перегляд замовлень на обладнання - можливість перегляду замовлень на обладнання.
+
+3 ПОБУДОВА ДІАГРАМИ ПАКЕТІВ
+
+На діаграмі пакетів представлена структура компонентів мобільного додатку. Програма система включає наступні пакети:
+CynologistPlus Mobile Application - центральний компонент, до якого прямо чи опосередковано пов'язані всі інші компоненти.
+ViewModels - містить логіку представлення даних, яка використовується в користувацькому інтерфейсі додатка.
+Views - включає елементи користувацького інтерфейсу, які відображають дані з моделей представлення.
+Models - містить основні дані та бізнес-логіку додатка.
+DTO (Data Transfer Objects) - використовується для передачі даних між шарами додатка, зокрема між клієнтом та сервером.
+Resources - включає ресурси, такі як рядки, зображення та інші асети, які використовуються в додатку.
+Extensions - надає додаткові методи або функції, які розширюють стандартний функціонал.
+Services - містить сервіси, які надають певні функції або дані додатку.
+Xamarin.Essentials - пакет, який надає кросплатформні API для доступу до основних функцій мобільного пристрою.
+System.Json.Serialization - використовується для серіалізації та десеріалізації даних JSON.
+System.IdentityModel.Token.Jwt - пакет, який використовується для роботи з JWT-токенами для аутентифікації та авторизації.
+
+4 ПОБУДОВА ДІАГРАМИ ДІЯЛЬНОСТІ
+
+Діаграма діяльності демонструє процес взаємодії користувача з системою. Вона дозволяє побачити потік виконня програми. На цій діаграмі продемонстровано роботу бджоляра з мобільним застосунком.
+Спочатку бджоляр має авторизуватися у системі. Якщо користувач ввів коректні дані, то він потрапляє на головну сторінку.
+Якщо користувач обирає пункт меню зі списком пасік, то він потрапляє на сторінку зі списков своїх пасік. Якщо натиснути на будь-яку пасіку, то можна отримати детальну інформацію про неї. На цій сторінці користувач може ознайомитись з показниками датчиків та чи перевищують вони критичні значення.
+Якщо користувач обирає пункт меню з профілем, то він потрапляє у профіль користувача. Тут відображається інформація про нього та налаштування локалізації. Користувач може змінити інформацію у профілі. Після підтвердження змін профіль оновлюється.
+Якщо користувач обирає пункт меню "вийти з акаунту", то користувач може ввести нові дані для входу.
+
+5 ПОБУДОВА ДІАГРАМИ КОМПОНЕНТІВ
+
+На діаграмі компонентів відбражаєтся взаємодія між компонентами системи та зовнішніми інтерфейсами. На цій діаграмі відображені зв'язки між мобільним застосунком, зовнішніми системами.
+Основні компоненти, з яких складається система:
+ApexiBee Mobile Application - центральний компонент, що координує взаємодію всіх інших компонентів додатка.
+Local Storage Data - локальне сховище даних, звідки додаток витягує рядки даних (властивості, налаштування).
+WebAPI - інтерфейс, через який додаток взаємодіє з веб-сервером для виконання запитів до бекенду.
+User - користувач, який взаємодіє з додатком через елементи управління, такі як навігація сторінками та оболонка додатка.
+API Services - сервіси, що забезпечують взаємодію додатка з бекендом, включаючи відправлення та отримання даних.
+Models - компонент, що містить моделі даних, які використовуються в додатку для представлення та управління даними.
+ViewModels - забезпечують зв'язування даних моделей з користувацьким інтерфейсом (ViewModel Binding).
+Views - компоненти представлення, через які користувач взаємодіє з додатком.
+Resources - ресурси додатка, включаючи статичні ресурси, такі як зображення та ресурси локалізації.
+
+ВИСНОВКИ
+
+В ході виконання лабораторної роботи було спроектовано та розроблено програмне забезпечення для мобільної частини системи та наведено опис прийнятих в процесі розробки інженерних рішень. 
+При розробці та проектуванні програмного продукту були дотримані основні вимоги для підтримки чистоти коду та масштабованості архітектури.
+
+ДОДАТОК А
+Програмний код розмітки сторінки з деталями пасіки
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ApexiBeeMobile.Views.ApiaryDetailsPage">
+    <ContentPage.Content>
+        <StackLayout>
+
+            <ListView HasUnevenRows="True" x:Name="apiariesList" ItemsSource="{Binding Hives}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <ViewCell.View>
+                                <Frame Padding="10" Margin="5" BorderColor="LightGray" CornerRadius="10" HasShadow="True">
+                                    <StackLayout Orientation="Vertical" Spacing="5">
+                                        <Label Text="Hive" FontSize="Medium" FontAttributes="Bold" TextColor="DarkBlue" />
+                                        <Label Text="{Binding Name}" FontSize="Medium" FontAttributes="Bold" TextColor="DarkBlue" />
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Label Grid.Row="0" Grid.Column="0" Text="ID:" FontAttributes="Bold" />
+                                            <Label Grid.Row="0" Grid.Column="1" Text="{Binding Id}" LineBreakMode="TailTruncation" />
+
+                                            <Label Grid.Row="1" Grid.Column="0" Text="Description:" FontAttributes="Bold" />
+                                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Description}" LineBreakMode="WordWrap" />
+                                        </Grid>
+
+                                        <!-- Вивід датчиків -->
+                                        <StackLayout Orientation="Vertical" Spacing="3">
+                                            <Label Text="Sensors" FontSize="Small" FontAttributes="Bold" />
+                                            <StackLayout Orientation="Vertical" Spacing="1">
+                                                <Label Text="{Binding Sensors}" FontSize="Small" />
+                                                <!-- Если Sensors это коллекция, покажем каждый датчик в отдельной Label -->
+                                                <StackLayout BindableLayout.ItemsSource="{Binding Sensors}" Orientation="Vertical">
+                                                    <BindableLayout.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Label Text="{Binding Value}" FontSize="Small" />
+                                                        </DataTemplate>
+                                                    </BindableLayout.ItemTemplate>
+                                                </StackLayout>
+                                            </StackLayout>
+                                        </StackLayout>
+
+                                    </StackLayout>
+                                </Frame>
+                            </ViewCell.View>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>
+
+ДОДАТОК Б
+Програмний код відображення моделі пасіки
+namespace ApexiBeeMobile.ViewModels
+{
+    public class ApiariesViewModel
+    {
+        public ObservableCollection<Apiary> Apiaries { get; set; }
+        private Apiary selectedApiary { get; set; }
+
+        private IApiaryService _apiaryService = DependencyService.Get<IApiaryService>();
+
+        public ApiariesViewModel()
+        {
+            Apiaries = new ObservableCollection<Apiary>();
+            this._apiaryService = DependencyService.Get<IApiaryService>();
+        }
+
+        public async Task GetApiaries()
+        {
+            try
+            {
+                IEnumerable<Apiary> apiaries = await this._apiaryService.GetUserApiaries();
+                Apiaries.Clear();
+
+                // Adding loaded from server data to obserable collection
+                foreach (var apiary in apiaries)
+                    Apiaries.Add(apiary);
+            }
+            catch
+            {
+                Debug.WriteLine("Failed to load apiaries list");
+                Apiaries = null;
+            }
+        }
+
+        public Apiary SelectedApiary
+        {
+            get { return selectedApiary; }
+            set
+            {
+                if (selectedApiary != value)
+                {
+                    Apiary tempApiary = new Apiary()
+                    {
+                        Id = value.Id,
+                        Name = value.Name,
+                        CreationDate = value.CreationDate,
+                        Description = value.Description,
+                        BeekeeperId = value.BeekeeperId
+                    };
+                    selectedApiary = null;
+                    Shell.Current.GoToAsync($"{nameof(ApiaryDetailsPage)}?Id={tempApiary.Id}");
+                }
+            }
+        }
+    }
+}
+
+ДОДАТОК В
+Код сервісу для роботи з пасікою
+public class ApiaryService : ServiceBase, IApiaryService
+{
+    private readonly IAuthService _authService;
+
+    readonly string apiUrl = Preferences.Get("ApiUrl", "") + "/api/Apiary";
+
+    public ApiaryService()
+    {
+        this._authService = DependencyService.Get<IAuthService>();
+    }
+
+    public async Task<IEnumerable<Hive>> GetApiaryHives(Guid apiaryId)
+    {
+        HttpClient client = GetClient();
+        string result = await client.GetStringAsync($"{apiUrl}/hives/{apiaryId}");
+        return JsonSerializer.Deserialize<IEnumerable<Hive>>(result, options);
+    }
+
+    public async Task<IEnumerable<Apiary>> GetUserApiaries()
+    {
+        Guid userAccountId = this._authService.GetUserAccountIdFromToken();
+
+        HttpClient client = GetClient();
+        string result = await client.GetStringAsync($"{apiUrl}/user/{userAccountId}");
+        return JsonSerializer.Deserialize<IEnumerable<Apiary>>(result, options);
+    }
+}
